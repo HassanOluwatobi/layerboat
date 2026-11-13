@@ -99,6 +99,8 @@
   // nothing here may stop the install
   try { if (new File(aiScript).exists && ensure(new Folder(home.fsName + '/Illustrator'))) {
     for (var as = 0; as < aiScripts.length; as++) copy(src.fsName + '/Illustrator/' + aiScripts[as], home.fsName + '/Illustrator/' + aiScripts[as]);
+    // what the panel runs; kept out of Illustrator's Scripts menu
+    copy(src.fsName + '/Illustrator/LayerBoat actions.jsx', home.fsName + '/Illustrator/LayerBoat actions.jsx');
     var appRoot = isMac ? new Folder('/Applications') : new Folder(($.getenv('ProgramFiles') || 'C:/Program Files') + '/Adobe');
     var ais = appRoot.exists ? appRoot.getFiles('Adobe Illustrator*') : [];
     for (var ai = 0; ai < ais.length; ai++) {

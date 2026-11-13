@@ -73,6 +73,8 @@ panel_ai = ('#targetengine "bridge"\n'
     '// from File > Scripts and keep it open beside your artwork.\n'
     + common + open(os.path.join(rel, 'illustrator-panel.jsx'), encoding='utf-8').read())
 open(os.path.join(out, 'Illustrator', 'LayerBoat Panel.jsx'), 'w', encoding='utf-8').write(panel_ai)
+open(os.path.join(out, 'Illustrator', 'LayerBoat actions.jsx'), 'w', encoding='utf-8').write(
+    '// LayerBoat for Illustrator: the actions the LayerBoat panel runs. Open the panel, not this file.\n' + common)
 open(os.path.join(out, 'LayerBoat.jsx'), 'w', encoding='utf-8').write(panel)
 check = open(os.path.join(rel, 'check-template.jsx'), encoding='utf-8').read().replace('/*@@CORE@@*/', core)
 open(os.path.join(out, 'LayerBoat check.jsx'), 'w', encoding='utf-8').write(check)
