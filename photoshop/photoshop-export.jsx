@@ -14,7 +14,7 @@ function LayerBoatPS_export(opts) {
   app.displayDialogs = DialogModes.NO;
   var activeBefore = null;
   try { activeBefore = doc.activeLayer; } catch (eA) {}
-  var notes = [];
+  var notes = [], missingFonts = {};
   // time spent per step, to find what makes a send slow
   var PT = {};
   function tick(k, t0) { var t = new Date().getTime(); PT[k] = (PT[k] || 0) + (t - t0); return t; }
@@ -142,8 +142,9 @@ function LayerBoatPS_export(opts) {
     // is moved from wherever it landed to its own spot in the image
     for (var k = 0; k < stack.length; k++) {
       try {
-        var Lk = scratch.layers[stack.length - 1 - k], sb = boundsOf(stack[k]), db = boundsOf(Lk);
-        if (sb[2] - sb[0] < 1) continue;
+        var Lk = scratch.layers[stack.length - 1 - k], sb = boundsOf(stack[k]), db = [0, 0, 0, 0];
+        try { db = boundsOf(Lk); } catch (eDb) {}
+        if (sb[2] - sb[0] < 1 || db[2] - db[0] < 1) continue;
         var dx = (sb[0] - cb[0]) - db[0], dy = (sb[1] - cb[1]) - db[1];
         if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) Lk.translate(UnitValue(dx, 'px'), UnitValue(dy, 'px'));
       } catch (eTr) { notes.push(String(stack[k].name) + ': could not place the copy: ' + eTr); }
@@ -214,6 +215,8 @@ function LayerBoatPS_export(opts) {
         // the family and style Photoshop actually draws with, which the PostScript name alone can get wrong
         try {
           if (st.hasKey(S('fontName')) && st.hasKey(S('fontStyleName'))) { seg.fontFamily = st.getString(S('fontName')); seg.fontStyle = st.getString(S('fontStyleName')); }
+          if (st.hasKey(S('fontPostScriptName'))) seg.ps = st.getString(S('fontPostScriptName'));
+          if (st.hasKey(S('fontAvailable')) && !st.getBoolean(S('fontAvailable'))) missingFonts[seg.fontFamily + ' ' + seg.fontStyle] = true;
           else { var f2 = fontOf(st.getString(S('fontPostScriptName'))); seg.fontFamily = f2.family; seg.fontStyle = f2.style; }
         } catch (eF) {}
         try {
@@ -233,6 +236,7 @@ function LayerBoatPS_export(opts) {
       tracking: o.tracking, leading: o.leading, textCase: o.textCase, underline: false, strike: false });
     o.segments = segs;
     o.fontFamily = segs[0].fontFamily; o.fontStyle = segs[0].fontStyle; o.fontSize = segs[0].fontSize; o.color = segs[0].color;
+    if (segs[0].ps) o.ps = segs[0].ps;
     var rot = Math.atan2(xy, xx) * 180 / Math.PI;
     var kind = 'POINTTEXT';
     try { kind = String(ti.kind); kind = kind.substring(kind.lastIndexOf('.') + 1); } catch (eK) {}
@@ -372,7 +376,16 @@ function LayerBoatPS_export(opts) {
       if (!flag(td, 'artboardEnabled')) continue;
       try { if (!top.visible) continue; } catch (eVis) {}
       var rect = td.getObjectValue(S('artboard')).getObjectValue(S('artboardRect'));
-      boards.push({ layer: top, x: rect.getDouble(S('left')), y: rect.getDouble(S('top')), w: rect.getDouble(S('right')) - rect.getDouble(S('left')), h: rect.getDouble(S('bottom')) - rect.getDouble(S('top')) });
+      // the artboard's own background colour, which Photoshop keeps outside the layers
+      var bg = [1, 1, 1, 1];
+      try {
+        var ab = td.getObjectValue(S('artboard'));
+        var bgType = ab.hasKey(S('artboardBackgroundType')) ? ab.getInteger(S('artboardBackgroundType')) : 1;
+        if (bgType === 2) bg = [0, 0, 0, 1];
+        else if (bgType === 3) bg = null;
+        else if (bgType === 4) { var bc = amColor(ab.getObjectValue(S('color'))); if (bc) bg = bc; }
+      } catch (eBg) {}
+      boards.push({ layer: top, bg: bg, x: rect.getDouble(S('left')), y: rect.getDouble(S('top')), w: rect.getDouble(S('right')) - rect.getDouble(S('left')), h: rect.getDouble(S('bottom')) - rect.getDouble(S('top')) });
     }
     var payload;
     if (boards.length) {
@@ -383,7 +396,9 @@ function LayerBoatPS_export(opts) {
         var bd = boards[bI];
         OX = bd.x; OY = bd.y;
         var kids = walk(bd.layer);
-        if (kids.length) subs.push(payloadFor(String(bd.layer.name), 'ps:' + DOC_PATH + ':' + bd.layer.id, bd.w, bd.h, kids));
+        if (kids.length && bd.bg) kids.unshift({ name: 'Artboard background', id: 'ps:bg:' + bd.layer.id, opacity: 1, blend: 'NORMAL', x: 0, y: 0, rotation: 0, scaleX: 100, scaleY: 100, skew: 0,
+          width: r(bd.w), height: r(bd.h), effects: [], type: 'shape', kind: 'rect', radius: 0, fills: [{ type: 'solid', color: bd.bg, opacity: 1, blend: 'NORMAL' }], stroke: null });
+        if (kids.length) { var sub = payloadFor(String(bd.layer.name), 'ps:' + DOC_PATH + ':' + bd.layer.id, bd.w, bd.h, kids); sub.origin = [bd.x, bd.y]; subs.push(sub); }
       }
       if (subs.length === 1) payload = subs[0];
       else if (subs.length) { payload = payloadFor(subs.length + ' artboards', 'ps:' + DOC_PATH, W, H, []); payload.multi = subs; }
@@ -393,6 +408,9 @@ function LayerBoatPS_export(opts) {
     }
     if (!payload) result = 'ERR Nothing to send. Show at least one layer.';
     else {
+      var mf = [];
+      for (var fm in missingFonts) if (missingFonts.hasOwnProperty(fm)) mf.push(fm);
+      if (mf.length) warn('Photoshop cannot load ' + mf.join(', ') + ' on this computer, so After Effects uses another font. Reinstall the font to fix it.');
       for (var w in warnings) if (warnings.hasOwnProperty(w)) payload.warnings.push(w);
       payload.stats = { seconds: (new Date().getTime() - started) / 1000, images: imageCount, notes: notes, steps: PT };
       if (payload.multi) for (var m = 0; m < payload.multi.length; m++) payload.multi[m].warnings = payload.warnings;

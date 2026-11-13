@@ -1,6 +1,6 @@
 // LayerBoat: core builder. Loaded by the panel and by the test runner.
 var LayerBoatCore = (function () {
-  var VERSION = '1.9';
+  var VERSION = '1.10';
   var LOG_FILE = null;
   // an error as text; some After Effects errors cannot be added to a string directly
   function errText(x) {
@@ -1241,7 +1241,22 @@ var LayerBoatCore = (function () {
     acc('txt:font', t0);
     return fontMemo[key];
   }
+  // Photoshop also sends each font's exact PostScript name, which finds fonts whose
+  // family and style names After Effects lists differently
+  var fontHints = {};
+  function noteFontHints(layers) {
+    for (var i = 0; layers && i < layers.length; i++) {
+      var l = layers[i];
+      if (l.ps && l.fontFamily) fontHints[l.fontFamily + '|' + l.fontStyle] = l.ps;
+      for (var g = 0; l.segments && g < l.segments.length; g++) { var sg = l.segments[g]; if (sg.ps) fontHints[sg.fontFamily + '|' + sg.fontStyle] = sg.ps; }
+      if (l.children) noteFontHints(l.children);
+    }
+  }
   function lookupFont(family, style) {
+    var hint = fontHints[family + '|' + style];
+    if (hint) {
+      try { var byPs = app.fonts.getFontsByPostScriptName(hint); if (byPs && byPs.length) return hint; } catch (eH) {}
+    }
     try {
       if (app.fonts && app.fonts.getFontsByFamilyNameAndStyleName) {
         var found = app.fonts.getFontsByFamilyNameAndStyleName(family, style);
@@ -1967,6 +1982,7 @@ var LayerBoatCore = (function () {
   }
 
   function build(data, opts) {
+    try { if (data) { noteFontHints(data.layers); for (var hm = 0; data.multi && hm < data.multi.length; hm++) noteFontHints(data.multi[hm].layers); } } catch (eHint) {}
     // several Figma frames sent together: one comp each
     if (data && data.multi && data.multi.length) {
       var each = {}, made = [];
