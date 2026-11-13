@@ -211,6 +211,8 @@ ARTICLES['vs-uxlink'] = dict(
     ''' + sources([('UXLink on aescripts + aeplugins', 'https://aescripts.com/uxlink/'), ('Fig2Ai on aescripts + aeplugins', 'https://aescripts.com/fig2ai/')]),
   rows=[('Price', 'Free', '$34.99', 'us'),
         ('Licence', 'Open source (MIT)', 'Paid licence', 'us'),
+        ('Account or sign-in', 'None needed', 'Licence key', 'us'),
+        ('Editable text', 'Yes', 'Yes', 'tie'),
         ('Illustrator', 'Included, with Figma and After Effects', 'Sold separately as Fig2Ai and PathLink', 'us'),
         ('Figma → After Effects', 'Yes', 'Yes', 'tie'),
         ('After Effects → Figma', 'Yes', 'Yes', 'tie'),
@@ -247,6 +249,9 @@ ARTICLES['vs-aeux'] = dict(
     <p>If AEUX still does what you need, it's free and you can keep using it. If it's started failing to connect, or you need to go back to Figma or work with Illustrator, LayerBoat is the free option that's still maintained.</p>
     ''' + sources([('AEUX documentation', 'https://google.github.io/AEUX/'), ('AEUX on GitHub', 'https://github.com/google/AEUX'), ('Battle Axe on AEUX', 'https://www.battleaxe.co/overlord/'), ('Battle Axe graveyard', 'https://battleaxe.co/graveyard')]),
   rows=[('Maintained', 'Yes', 'No longer maintained', 'us'),
+        ('Updates', 'Free, always', 'None, no longer maintained', 'us'),
+        ('Account or sign-in', 'None needed', 'None needed', 'tie'),
+        ('Editable text', 'Yes', 'Yes', 'tie'),
         ('After Effects → Figma', 'Yes', 'No', 'us'),
         ('Illustrator', 'Yes, both ways', 'No', 'us'),
         ('After Effects setup', 'One script inside After Effects', 'Separate ZXP installer needed', 'us'),
@@ -291,6 +296,9 @@ ARTICLES['vs-convertify'] = dict(
     <p>Pick Convertify if converting between many design formats is part of your job and the subscription pays for itself. Pick LayerBoat if your goal is animating Figma or Illustrator work in After Effects.</p>
     ''' + sources([('Convertify by Hypermatic', 'https://www.hypermatic.com/convertify'), ('Convertify Figma to After Effects tutorial', 'https://docs.hypermatic.com/convertify/export/adobe-after-effects'), ('Convertify Free vs Pro', 'https://docs.hypermatic.com/convertify/faq/plans'), ('Hypermatic pricing', 'https://www.hypermatic.com/')]),
   rows=[('Price', 'Free', '$49 a month or $499 a year after 10 free trials', 'us'),
+        ('Licence', 'Open source (MIT)', 'Subscription per user', 'us'),
+        ('Updates', 'Free, always', 'While subscribed', 'us'),
+        ('Account or sign-in', 'None needed', 'Pro licence key', 'us'),
         ('Route into After Effects', 'Straight across', 'Through an Adobe XD file', 'us'),
         ('After Effects → Figma', 'Yes', 'No', 'us'),
         ('Illustrator ↔ After Effects', 'Yes', 'No', 'us'),
@@ -308,18 +316,23 @@ def build():
         open(os.path.join(SITE, slug + '.html'), 'w', encoding='utf-8').write(page(slug, a['title'], a['desc'], body, a['faq']))
     # the hub
     cols = ['LayerBoat', 'Overlord', 'UXLink', 'AEUX', 'Convertify']
-    grid = [('Price', ['Free', '$75 one time', '$34.99', 'Free', '$49/month or $499/year']),
-            ('Figma → After Effects', ['Yes', 'Yes', 'Yes', 'Yes', 'Through Adobe XD']),
-            ('After Effects → Figma', ['Yes', 'Yes', 'Yes', 'No', 'No']),
-            ('Illustrator', ['Yes', 'Yes', 'Separate tools', 'No', 'No']),
-            ('Open source', ['Yes', 'No', 'No', 'Yes', 'No']),
-            ('Maintained', ['Yes', 'Yes', 'Yes', 'No', 'Yes']),
-            ('Animation carried across', ['No', 'No', 'Yes', 'No', 'No']),
-            ('Photoshop', ['No', 'Yes', 'No', 'No', 'No'])]
-    def c(v):
-        good = v.startswith('Yes') or v.startswith('Free')
-        bad = v == 'No'
-        return '<td class="%s">%s</td>' % ('cw' if good else ('cl' if bad else ''), v)
+    # each cell: (text, 'w' better or equal, 'l' behind, 'n' not stated)
+    grid = [('Price', [('Free', 'w'), ('$75 one time', 'l'), ('$34.99', 'l'), ('Free', 'w'), ('$49/month or $499/year', 'l')]),
+            ('Licence', [('Open source (MIT)', 'w'), ('Licence key, 2 machines', 'l'), ('Paid licence', 'l'), ('Open source', 'w'), ('Subscription per user', 'l')]),
+            ('Updates', [('Free, always', 'w'), ('1 year, then optional renewal', 'l'), ('Not stated', 'n'), ('None, no longer maintained', 'l'), ('While subscribed', 'l')]),
+            ('Account or sign-in', [('None', 'w'), ('Online unlock at setup', 'l'), ('Licence key', 'l'), ('None', 'w'), ('Pro licence key', 'l')]),
+            ('Figma → After Effects', [('Yes', 'w'), ('Yes', 'w'), ('Yes', 'w'), ('Yes', 'w'), ('Through Adobe XD', 'l')]),
+            ('After Effects → Figma', [('Yes', 'w'), ('Yes', 'w'), ('Yes', 'w'), ('No', 'l'), ('No', 'l')]),
+            ('Illustrator ↔ After Effects', [('Yes', 'w'), ('Yes', 'w'), ('Separate tool (PathLink)', 'l'), ('No', 'l'), ('No', 'l')]),
+            ('Figma ↔ Illustrator', [('Yes', 'w'), ('Yes', 'w'), ('Separate tool (Fig2Ai)', 'l'), ('No', 'l'), ('Illustrator → Figma only', 'l')]),
+            ('Editable text', [('Yes', 'w'), ('Yes', 'w'), ('Yes', 'w'), ('Yes', 'w'), ('Not stated', 'n')]),
+            ('Open source', [('Yes', 'w'), ('No', 'l'), ('No', 'l'), ('Yes', 'w'), ('No', 'l')]),
+            ('Maintained', [('Yes', 'w'), ('Yes', 'w'), ('Yes', 'w'), ('No', 'l'), ('Yes', 'w')]),
+            ('Animation carried across', [('No', 'l'), ('No', 'l'), ('Yes', 'w'), ('No', 'l'), ('No', 'l')]),
+            ('Photoshop', [('No', 'l'), ('Yes', 'w'), ('No', 'l'), ('No', 'l'), ('No', 'l')])]
+    def c(cell):
+        v, k = cell
+        return '<td class="%s">%s</td>' % ({'w': 'cw', 'l': 'cl', 'n': ''}[k], v)
     hub = '<div class="cmp-wrap"><table class="cmp multi"><thead><tr><th></th>' + ''.join('<th%s>%s</th>' % (' class="us"' if i == 0 else '', n) for i, n in enumerate(cols)) + '</tr></thead><tbody>'
     for label, vals in grid:
         hub += '<tr><td>%s</td>%s</tr>' % (label, ''.join(c(v) for v in vals))
