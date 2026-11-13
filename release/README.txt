@@ -59,8 +59,8 @@ Photoshop to After Effects
   LayerBoat/Photoshop/Send to After Effects.jsx in this folder.
 - A new comp appears. Text stays editable, plain shapes become shape layers
   and groups stay groups. Other layers arrive as images with their layer
-  styles drawn in. Adjustment layers are left out. Each artboard becomes
-  its own comp.
+  styles drawn in. The common adjustment layers become After Effects
+  adjustment layers. Each artboard becomes its own comp.
 
 Illustrator to After Effects
 - Open your artwork in Illustrator. Select what you want, or select nothing

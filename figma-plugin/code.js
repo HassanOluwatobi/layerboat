@@ -433,6 +433,67 @@ function flattenedGeometry(node) {
 
 // ---------- node conversion ----------
 var nodeOf = new Map();
+
+// ---------- components ----------
+// Every copy of a Figma component that differs only in its text is sent as a
+// reference to one shared description of the component, drawn in its own space.
+// After Effects builds that once as a precomp, and each copy's text goes in as
+// an Essential Graphics override.
+var mainOf = new Map(), components = {};
+async function findMains(nodes) {
+  async function walk(n) {
+    if (n.visible === false) return;
+    if (n.type === 'INSTANCE') { try { var m = await n.getMainComponentAsync(); if (m) mainOf.set(n.id, m); } catch (e) {} }
+    if ('children' in n) for (var c = 0; c < n.children.length; c++) await walk(n.children[c]);
+  }
+  for (var k = 0; k < nodes.length; k++) await walk(nodes[k]);
+}
+// the part of a layer id inside an instance that is the same in every copy
+function idInComponent(id) { var at = String(id).indexOf(';'); return at < 0 ? String(id) : String(id).substring(at + 1); }
+var TEXT_ONLY = { characters: true, name: true, width: true, height: true, textAutoResize: true };
+// how a text layer looks, leaving out the words themselves
+function textLook(t) {
+  try {
+    var segs = t.getStyledTextSegments(['fontName', 'fontSize', 'fills', 'letterSpacing', 'lineHeight', 'textCase', 'textDecoration']), seen = {}, out = [];
+    for (var i = 0; i < segs.length; i++) {
+      var k = JSON.stringify([segs[i].fontName, segs[i].fontSize, segs[i].fills, segs[i].letterSpacing, segs[i].lineHeight, segs[i].textCase, segs[i].textDecoration]);
+      if (!seen[k]) { seen[k] = true; out.push(k); }
+    }
+    return out.sort().join('|');
+  } catch (e) { return null; }
+}
+function findById(root, id) { return root.id === id ? root : root.findOne(function (n) { return n.id === id; }); }
+function componentRef(node) {
+  var main = mainOf.get(node.id);
+  if (!main) return null;
+  if (Math.abs(node.width - main.width) > 0.5 || Math.abs(node.height - main.height) > 0.5) return null;
+  var ov = [];
+  try { ov = node.overrides || []; } catch (e) { return null; }
+  for (var i = 0; i < ov.length; i++) {
+    var target = null;
+    try { target = findById(node, ov[i].id); } catch (eN) {}
+    var isText = target && target.type === 'TEXT';
+    var inner = idInComponent(ov[i].id);
+    for (var f = 0; f < ov[i].overriddenFields.length; f++) {
+      var fld = ov[i].overriddenFields[f];
+      if (fld === 'name') continue;
+      if (!isText) return null;
+      // text inside a nested component cannot be set from this copy
+      if (inner.indexOf(';') >= 0) return null;
+      if (TEXT_ONLY[fld]) continue;
+      // Figma marks the styling as changed whenever the words change, so it is compared
+      if (fld === 'styledTextSegments') {
+        var twin = null;
+        try { twin = findById(main, inner); } catch (eT) {}
+        if (twin && twin.type === 'TEXT' && textLook(twin) !== null && textLook(twin) === textLook(target)) continue;
+      }
+      return null;
+    }
+  }
+  var name = main.name;
+  try { if (main.parent && main.parent.type === 'COMPONENT_SET') name = main.parent.name + ' / ' + main.name; } catch (eP) {}
+  return { key: main.id, name: name };
+}
 function base(node, rootInv) {
   var rel = mul(rootInv, node.absoluteTransform);
   var t = decompose(rel);
@@ -804,6 +865,23 @@ async function measure(node, from, to) {
 }
 
 function groupData(node, rootInv, isRootFrame) {
+  if (!isRootFrame && node.type === 'INSTANCE') {
+    var ref = componentRef(node);
+    if (ref) {
+      var inst = base(node, rootInv);
+      inst.type = 'group';
+      inst.component = ref.key;
+      if (!components[ref.key]) {
+        // drawn once, in the copy's own space
+        components[ref.key] = { name: ref.name, width: r(node.width), height: r(node.height), layers: [] };
+        components[ref.key].layers = groupData(node, invert(node.absoluteTransform), true).children;
+      }
+      inst.texts = {};
+      var tx = node.findAll(function (n) { return n.type === 'TEXT'; });
+      for (var ti = 0; ti < tx.length; ti++) inst.texts[idInComponent(tx[ti].id)] = tx[ti].characters;
+      return inst;
+    }
+  }
   var o = base(node, rootInv);
   o.type = 'group';
   o.isFrame = node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE' || node.type === 'COMPONENT_SET' || node.type === 'SECTION';
@@ -1463,7 +1541,10 @@ async function svgForIllustrator() {
 async function makePayload(sel) {
   imageJobs = [];
   textJobs = [];
+  components = {};
+  mainOf = new Map();
   await loadFonts(sel);
+  await findMains(sel);
   var root, layers = [], compW, compH, name;
   // identifies this frame or selection, so sending it again updates the same comp
   var ids = [];
@@ -1507,7 +1588,9 @@ async function makePayload(sel) {
     try { await glyphWidths(textJobs[tq].node, textJobs[tq].o); } catch (e3) {}
   }
   markMerges(layers, true);
-  return {
+  var used = 0;
+  for (var ck in components) if (components.hasOwnProperty(ck)) { markMerges(components[ck].layers, true); used++; }
+  var out = {
     bridge: 'figma-to-ae',
     version: 1,
     name: name,
@@ -1516,6 +1599,8 @@ async function makePayload(sel) {
     height: Math.max(1, Math.round(compH)),
     layers: layers
   };
+  if (used) out.components = components;
+  return out;
 }
 
 figma.ui.onmessage = async function (msg) {

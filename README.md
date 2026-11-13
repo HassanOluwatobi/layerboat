@@ -10,7 +10,7 @@ LayerBoat sends your designs between four apps as native, editable layers.
 
 | From | To | What comes across |
 | --- | --- | --- |
-| Figma | After Effects | Frames and layers become shape, text and image layers. Gradients, strokes, masks, shadows, blurs and groups stay editable. |
+| Figma | After Effects | Frames and layers become shape, text and image layers. Gradients, strokes, masks, shadows, blurs and groups stay editable. Each component becomes one shared comp, and every copy's own text is set through Essential Graphics. |
 | After Effects | Figma | A comp, or its selected layers, becomes a Figma frame with editable layers. |
 | Illustrator | After Effects | The selection or the active artboard becomes a comp. Curves and gradients match Illustrator exactly. |
 | After Effects | Illustrator | A comp lands on a new artboard. Text stays live, paragraph text keeps its box, layer names stay. |
@@ -47,7 +47,7 @@ Windows has passed an automated install and connection test, but has not been tr
 - Gradients you make by hand in After Effects arrive grey in Figma and Illustrator, because After Effects scripts cannot read gradient colours. Gradients LayerBoat made keep their colours.
 - Animation is not sent between apps. Figma and Illustrator get the first frame.
 - In Illustrator, the panel floats and is opened through **Other Script**. Illustrator scripts cannot dock a panel.
-- From Photoshop, adjustment layers are left out, and layer styles, masks and clipping masks are drawn into images instead of staying live.
+- From Photoshop, layer styles, masks and clipping masks are drawn into images instead of staying live. Levels, Curves, Hue/Saturation, Brightness/Contrast, Exposure, Vibrance, Invert, Black & White, Posterize, Threshold and Photo Filter become After Effects adjustment layers, with Curves as Levels. Masks on adjustment layers and other adjustment types are left out.
 - After a long After Effects session, gradient colours can stop applying. Restarting After Effects fixes it.
 
 ---

@@ -35,6 +35,9 @@
   var combine = win.add('checkbox', undefined, 'Combine icons into one layer');
   combine.value = true;
   combine.helpTip = 'Groups made only of vector shapes become one shape layer. Turn off to put every shape on its own layer.';
+  var comps = win.add('checkbox', undefined, 'Figma components as precomps');
+  comps.value = true;
+  comps.helpTip = 'Each Figma component is built once as its own comp. Every copy is a layer of it, with its own text in Essential Graphics, so a change to the component shows in every copy.';
   var centre = win.add('checkbox', undefined, 'Centre anchor points');
   centre.value = true;
   centre.helpTip = 'Puts each layer\'s anchor point in its middle, so it turns and scales about its centre. Nothing moves on screen.';
@@ -66,10 +69,10 @@
   var SECTION = 'LayerBoat';
   function loadOpt(box, key) { try { if (app.settings.haveSetting(SECTION, key)) box.value = app.settings.getSetting(SECTION, key) === '1'; } catch (e) {} }
   function saveOpt(box, key) { box.onClick = (function (prev) { return function () { try { app.settings.saveSetting(SECTION, key, box.value ? '1' : '0'); } catch (e) {} if (prev) prev(); }; })(box.onClick); }
-  var boxes = [[intoActive, 'intoActive'], [useNulls, 'nulls'], [combine, 'combine'], [update, 'update'], [centre, 'centre']];
+  var boxes = [[intoActive, 'intoActive'], [useNulls, 'nulls'], [combine, 'combine'], [comps, 'components'], [update, 'update'], [centre, 'centre']];
   for (var bi = 0; bi < boxes.length; bi++) { loadOpt(boxes[bi][0], boxes[bi][1]); saveOpt(boxes[bi][0], boxes[bi][1]); }
 
-  function opts() { return { intoActive: intoActive.value, nulls: useNulls.value, combine: combine.value, update: update.value, centerAnchors: centre.value }; }
+  function opts() { return { intoActive: intoActive.value, nulls: useNulls.value, combine: combine.value, components: comps.value, update: update.value, centerAnchors: centre.value }; }
   function setStatus(t) { status.text = t; try { win.layout.layout(true); } catch (e) {} }
 
   function startLive() {

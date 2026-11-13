@@ -205,7 +205,7 @@ function LayerBoatPS_export(opts) {
     // each run of characters with its own font, size or colour
     var segs = [];
     try {
-      var ranges = tk.getList(S('textStyleRange')), ref0 = null;
+      var ranges = tk.getList(S('textStyleRange')), ref0 = null, ptToPx = 1;
       for (var i = 0; i < ranges.count; i++) {
         var rg = ranges.getObjectValue(i), st = rg.getObjectValue(S('textStyle'));
         var seg = { start: rg.getInteger(S('from')), end: rg.getInteger(S('to')), fontFamily: o.fontFamily, fontStyle: o.fontStyle, fontSize: o.fontSize,
@@ -222,7 +222,7 @@ function LayerBoatPS_export(opts) {
         try {
           // sizes are scaled the same way as the first run, whatever unit Photoshop reports them in
           var amSize = st.getUnitDoubleValue(S('size'));
-          if (ref0 === null) ref0 = amSize;
+          if (ref0 === null) { ref0 = amSize; ptToPx = ref0 ? o.fontSize / ref0 : 1; }
           if (ref0) seg.fontSize = r(o.fontSize * amSize / ref0);
         } catch (eS) {}
         try { var col = amColor(st.getObjectValue(S('color'))); if (col) seg.color = col; } catch (eCo) {}
@@ -235,6 +235,14 @@ function LayerBoatPS_export(opts) {
     if (!segs.length) segs.push({ start: 0, end: text.length, fontFamily: o.fontFamily, fontStyle: o.fontStyle, fontSize: o.fontSize, color: o.color,
       tracking: o.tracking, leading: o.leading, textCase: o.textCase, underline: false, strike: false });
     o.segments = segs;
+    // tab stops, so After Effects can space tabs the way Photoshop does
+    if (text.indexOf(F(9)) >= 0) {
+      try {
+        var ps0 = tk.getList(S('paragraphStyleRange')).getObjectValue(0).getObjectValue(S('paragraphStyle'));
+        var tw = num2(ps0, 'defaultTabWidth', 36);
+        if (typeof ptToPx === 'number') o.tabWidth = r(tw * ptToPx);
+      } catch (eTab) {}
+    }
     o.fontFamily = segs[0].fontFamily; o.fontStyle = segs[0].fontStyle; o.fontSize = segs[0].fontSize; o.color = segs[0].color;
     if (segs[0].ps) o.ps = segs[0].ps;
     var rot = Math.atan2(xy, xx) * 180 / Math.PI;
@@ -297,6 +305,76 @@ function LayerBoatPS_export(opts) {
     return o;
   }
 
+  // ---------- adjustment layers ----------
+  // The common adjustments become After Effects adjustment layers with the matching
+  // effect. Curves become Levels, which follows simple curves closely.
+  function num2(dsc, key, dflt) { try { return dsc.hasKey(S(key)) ? dsc.getDouble(S(key)) : dflt; } catch (e) { try { return dsc.getInteger(S(key)); } catch (e2) { return dflt; } } }
+  function pair(dsc, key, dflt) {
+    try { var l = dsc.getList(S(key)); return [l.getInteger(0), l.getInteger(1)]; } catch (e) { return dflt; }
+  }
+  function adjustmentOf(L, d, kind) {
+    var a = null;
+    try { a = d.getList(S('adjustment')).getObjectValue(0); } catch (e) {}
+    var o = { name: String(L.name), id: 'ps:' + L.id, opacity: r(L.opacity / 100 * L.fillOpacity / 100), blend: blendOf(L), type: 'adjustment', x: 0, y: 0, width: W, height: H, effects: [] };
+    if (flag(d, 'hasUserMask')) warn('Masks on adjustment layers are left out, so those adjustments cover the whole layer below.');
+    if (kind === 'LEVELS' || kind === 'CURVES') {
+      var lv = { kind: 'levels', inB: 0, inW: 1, gamma: 1, outB: 0, outW: 1 };
+      var first = null;
+      try { first = a.getList(S('adjustment')).getObjectValue(0); } catch (eF) {}
+      if (kind === 'LEVELS' && first) {
+        var inp = pair(first, 'input', [0, 255]), outp = pair(first, 'output', [0, 255]);
+        lv.inB = r(inp[0] / 255); lv.inW = r(inp[1] / 255); lv.outB = r(outp[0] / 255); lv.outW = r(outp[1] / 255);
+        lv.gamma = r(num2(first, 'gamma', 1));
+      } else if (first) {
+        var pts = [];
+        try { var cl = first.getList(S('curve')); for (var i = 0; i < cl.count; i++) { var pt = cl.getObjectValue(i); pts.push([num2(pt, 'horizontal', 0) / 255, num2(pt, 'vertical', 0) / 255]); } } catch (eC) {}
+        if (pts.length >= 2) {
+          var p0 = pts[0], p1 = pts[pts.length - 1];
+          lv.inB = r(p0[0]); lv.outB = r(p0[1]); lv.inW = r(p1[0]); lv.outW = r(p1[1]);
+          // the points in between set the gamma: After Effects draws output = input ^ (1 / gamma)
+          var sum = 0, n = 0;
+          for (var k = 1; k < pts.length - 1; k++) {
+            var xn = (pts[k][0] - p0[0]) / Math.max(0.001, p1[0] - p0[0]), yn = (pts[k][1] - p0[1]) / Math.max(0.001, p1[1] - p0[1]);
+            if (xn > 0.02 && xn < 0.98 && yn > 0.02 && yn < 0.98) { sum += Math.log(xn) / Math.log(yn); n++; }
+          }
+          if (n) lv.gamma = r(Math.max(0.1, Math.min(5, sum / n)));
+          if (pts.length > 3) warn('Curves with several points come across as Levels, which is close but not exact.');
+        }
+      }
+      o.adjust = lv;
+      return o;
+    }
+    if (kind === 'HUESATURATION') {
+      var hs = { kind: 'hueSaturation', hue: 0, saturation: 0, lightness: 0, colorize: false };
+      try { hs.colorize = a.hasKey(S('colorize')) && a.getBoolean(S('colorize')); } catch (eZ) {}
+      try {
+        var hl = a.getList(S('adjustment'));
+        for (var h = 0; h < hl.count; h++) {
+          var e = hl.getObjectValue(h);
+          if (e.hasKey(S('localRange'))) { if (num2(e, 'hue', 0) || num2(e, 'saturation', 0) || num2(e, 'lightness', 0)) warn('Hue/Saturation changes to single colour ranges are left out.'); continue; }
+          hs.hue = num2(e, 'hue', 0); hs.saturation = num2(e, 'saturation', 0); hs.lightness = num2(e, 'lightness', 0);
+        }
+      } catch (eH) {}
+      o.adjust = hs;
+      return o;
+    }
+    if (kind === 'BRIGHTNESSCONTRAST') { o.adjust = { kind: 'brightness', brightness: num2(a, 'brightness', 0), contrast: num2(a, 'center', 0), legacy: flag(a, 'useLegacy') }; return o; }
+    if (kind === 'EXPOSURE') { o.adjust = { kind: 'exposure', exposure: num2(a, 'exposure', 0), offset: num2(a, 'offset', 0), gamma: num2(a, 'gammaCorrection', 1) }; return o; }
+    if (kind === 'VIBRANCE') { o.adjust = { kind: 'vibrance', vibrance: num2(a, 'vibrance', 0), saturation: num2(a, 'saturation', 0) }; return o; }
+    if (kind === 'INVERSION') { o.adjust = { kind: 'invert' }; return o; }
+    if (kind === 'BLACKANDWHITE') { o.adjust = { kind: 'blackWhite', reds: num2(a, 'red', 40), yellows: num2(a, 'yellow', 60), greens: num2(a, 'green', 40), cyans: num2(a, 'cyan', 60), blues: num2(a, 'blue', 20), magentas: num2(a, 'magenta', 80) }; return o; }
+    if (kind === 'POSTERIZE') { o.adjust = { kind: 'posterize', levels: num2(a, 'levels', 4) }; return o; }
+    if (kind === 'THRESHOLD') { o.adjust = { kind: 'threshold', level: r(num2(a, 'level', 128) / 255) }; return o; }
+    if (kind === 'PHOTOFILTER') {
+      var pc = null;
+      try { pc = amColor(a.getObjectValue(S('color'))); } catch (eP) {}
+      o.adjust = { kind: 'photoFilter', color: pc || [0.93, 0.54, 0, 1], density: num2(a, 'density', 25), keepLight: flag(a, 'preserveLuminosity') };
+      return o;
+    }
+    warn('Some adjustment layers (' + kind.toLowerCase() + ') are left out. Their effect is not carried across.');
+    return null;
+  }
+
   // ---------- layers ----------
   var ADJUST = /BRIGHTNESSCONTRAST|CHANNELMIXER|COLORBALANCE|CURVES|EXPOSURE|GRADIENTMAP|HUESATURATION|INVERSION|LEVELS|PHOTOFILTER|POSTERIZE|SELECTIVECOLOR|THRESHOLD|VIBRANCE|BLACKANDWHITE|COLORLOOKUP/;
   function convert(L) {
@@ -312,12 +390,13 @@ function LayerBoatPS_export(opts) {
       g.type = 'group'; g.isFrame = false; g.clips = false;
       g.children = walk(L);
       if (!g.children.length) return null;
+      if (bm.indexOf('PASSTHROUGH') === -1) for (var ac = 0; ac < g.children.length; ac++) if (g.children[ac].type === 'adjustment') g.precomp = true;
       if (g.opacity < 1 || g.blend !== 'NORMAL') g.precomp = true;
       return g;
     }
     var kind = String(L.kind);
     kind = kind.substring(kind.lastIndexOf('.') + 1);
-    if (ADJUST.test(kind)) { warn('Adjustment layers are left out. Their effect is not carried across.'); return null; }
+    if (ADJUST.test(kind)) return adjustmentOf(L, d, kind);
     var masked = flag(d, 'hasUserMask') || effectsOn(d);
     if (kind === 'TEXT') {
       if (!masked && has(d, 'textKey')) {

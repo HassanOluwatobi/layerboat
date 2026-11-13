@@ -1,6 +1,6 @@
 // LayerBoat: core builder. Loaded by the panel and by the test runner.
 var LayerBoatCore = (function () {
-  var VERSION = '1.10';
+  var VERSION = '1.11';
   var LOG_FILE = null;
   // an error as text; some After Effects errors cannot be added to a string directly
   function errText(x) {
@@ -1082,6 +1082,163 @@ var LayerBoatCore = (function () {
   var lumaMattes = [];
   // Text that a Figma component property controls goes into the comp's
   // Essential Graphics, named after the property, so it can be edited there.
+  // ---------- Figma components ----------
+  // A component is built once as its own comp. Each copy is a layer of that comp,
+  // and the copy's own text is set through Essential Graphics.
+  var COMPONENTS = {}, MASTERS = {};
+  function idInComponent(id) { var at = String(id).indexOf(';'); return at < 0 ? String(id) : String(id).substring(at + 1); }
+  var _componentBin = null;
+  function componentBin() {
+    try { if (_componentBin && _componentBin.name) return _componentBin; } catch (e) {}
+    for (var i = 1; i <= app.project.numItems; i++) {
+      var it = app.project.item(i);
+      if (it instanceof FolderItem && it.name === 'Figma Components') return (_componentBin = it);
+    }
+    return (_componentBin = app.project.items.addFolder('Figma Components'));
+  }
+  // the text layers that belong to this component itself, not to components inside it
+  function componentTexts(list, out) {
+    for (var i = 0; list && i < list.length; i++) {
+      var t = list[i];
+      if (t.type === 'text') out.push(t);
+      else if (t.type === 'group' && !t.component) componentTexts(t.children, out);
+    }
+    return out;
+  }
+  function masterFor(key, comp, opts) {
+    if (MASTERS[key]) return MASTERS[key];
+    var def = COMPONENTS[key];
+    var mc = app.project.items.addComp(def.name, Math.max(1, Math.round(def.width)), Math.max(1, Math.round(def.height)), comp.pixelAspect, comp.duration, comp.frameRate);
+    try { mc.parentFolder = componentBin(); mc.comment = 'figma-component:' + key; } catch (eF) {}
+    var made = [];
+    buildTree(mc, def.layers, null, opts, made, null, {});
+    // this comp's text goes into Essential Graphics here, under each text layer's own name
+    var keep = [];
+    for (var q = 0; q < egpQueue.length; q++) if (egpQueue[q].comp !== mc) keep.push(egpQueue[q]);
+    egpQueue = keep;
+    var props = {}, seen = {}, texts = componentTexts(def.layers, []);
+    for (var t = 0; t < texts.length; t++) {
+      var td = texts[t], L = null, tag = 'figma:' + td.id + ':';
+      for (var k = 1; k <= mc.numLayers && !L; k++) { var c = mc.layer(k); if (c instanceof TextLayer && String(c.comment).indexOf(tag) === 0) L = c; }
+      if (!L) continue;
+      var base = td.propName || td.name || 'Text', nm = base, n = 2;
+      while (seen[nm]) nm = base + ' ' + (n++);
+      seen[nm] = true;
+      try {
+        var src = L.property('ADBE Text Properties').property('ADBE Text Document');
+        if (src.addToMotionGraphicsTemplateAs(mc, nm)) props[idInComponent(td.id)] = { name: nm, text: String(td.characters) };
+      } catch (eM) { log('essential graphics failed: ' + errText(eM)); }
+    }
+    MASTERS[key] = { comp: mc, props: props };
+    return MASTERS[key];
+  }
+  function essentialProp(layer, name) {
+    var g = null;
+    try { g = layer.property('ADBE Layer Overrides'); } catch (e) {}
+    if (!g) { try { g = layer.property('Essential Properties'); } catch (e2) {} }
+    if (!g) return null;
+    try { return g.property(name); } catch (e3) { return null; }
+  }
+  function buildInstance(comp, d, opts) {
+    var m = masterFor(d.component, comp, opts);
+    var P = comp.layers.add(m.comp);
+    P.name = d.name;
+    placeLayer(P, { x: d.x, y: d.y, rotation: d.rotation, scaleX: d.scaleX, scaleY: d.scaleY, opacity: d.opacity, blend: d.blend }, [0, 0]);
+    // the copy's own text
+    for (var key in d.texts) {
+      if (!d.texts.hasOwnProperty(key) || !m.props[key]) continue;
+      var want = String(d.texts[key]);
+      if (want === m.props[key].text) continue;
+      var ep = essentialProp(P, m.props[key].name);
+      if (!ep) { note('Some component text could not be set. Update After Effects to 2020 or newer.'); continue; }
+      try { var v = ep.value; v.text = want.replace(/\r\n|\n/g, '\r'); ep.setValue(v); } catch (eV) { log('override failed: ' + errText(eV)); }
+    }
+    return P;
+  }
+
+  // ---------- adjustment layers ----------
+  function setFx(fx, matchName, value) { try { fx.property(matchName).setValue(value); } catch (e) { log('adjustment value failed ' + matchName + ': ' + errText(e)); } }
+  function buildAdjustment(comp, d) {
+    var a = d.adjust;
+    if (!a) return null;
+    var L = comp.layers.addSolid([1, 1, 1], d.name, comp.width, comp.height, comp.pixelAspect);
+    L.adjustmentLayer = true;
+    L.label = 5;
+    var fxs = L.property('ADBE Effect Parade'), fx;
+    if (a.kind === 'levels') {
+      fx = fxs.addProperty('ADBE Easy Levels2');
+      setFx(fx, 'ADBE Easy Levels2-0003', a.inB); setFx(fx, 'ADBE Easy Levels2-0004', a.inW); setFx(fx, 'ADBE Easy Levels2-0005', a.gamma);
+      setFx(fx, 'ADBE Easy Levels2-0006', a.outB); setFx(fx, 'ADBE Easy Levels2-0007', a.outW);
+    } else if (a.kind === 'hueSaturation') {
+      fx = fxs.addProperty('ADBE HUE SATURATION');
+      if (a.colorize) {
+        setFx(fx, 'ADBE HUE SATURATION-0007', 1); setFx(fx, 'ADBE HUE SATURATION-0008', a.hue);
+        setFx(fx, 'ADBE HUE SATURATION-0009', a.saturation); setFx(fx, 'ADBE HUE SATURATION-0010', a.lightness);
+      } else {
+        setFx(fx, 'ADBE HUE SATURATION-0004', a.hue); setFx(fx, 'ADBE HUE SATURATION-0005', a.saturation); setFx(fx, 'ADBE HUE SATURATION-0006', a.lightness);
+      }
+    } else if (a.kind === 'brightness') {
+      fx = fxs.addProperty('ADBE Brightness & Contrast 2');
+      setFx(fx, 'ADBE Brightness & Contrast 2-0001', a.brightness); setFx(fx, 'ADBE Brightness & Contrast 2-0002', Math.max(-100, Math.min(100, a.contrast)));
+      if (a.legacy) setFx(fx, 'ADBE Brightness & Contrast 2-0003', 1);
+    } else if (a.kind === 'exposure') {
+      fx = fxs.addProperty('ADBE Exposure2');
+      setFx(fx, 'ADBE Exposure2-0003', a.exposure); setFx(fx, 'ADBE Exposure2-0004', a.offset); setFx(fx, 'ADBE Exposure2-0005', a.gamma);
+    } else if (a.kind === 'vibrance') {
+      fx = fxs.addProperty('ADBE Vibrance');
+      setFx(fx, 'ADBE Vibrance-0001', a.vibrance); setFx(fx, 'ADBE Vibrance-0002', a.saturation);
+    } else if (a.kind === 'invert') {
+      fxs.addProperty('ADBE Invert');
+    } else if (a.kind === 'blackWhite') {
+      fx = fxs.addProperty('ADBE Black&White');
+      var bw = [a.reds, a.yellows, a.greens, a.cyans, a.blues, a.magentas];
+      for (var b = 0; b < bw.length; b++) setFx(fx, 'ADBE Black&White-000' + (b + 1), bw[b]);
+    } else if (a.kind === 'posterize') {
+      fx = fxs.addProperty('ADBE Posterize'); setFx(fx, 'ADBE Posterize-0001', Math.max(2, Math.round(a.levels)));
+    } else if (a.kind === 'threshold') {
+      fx = fxs.addProperty('ADBE Threshold2'); setFx(fx, 'ADBE Threshold2-0001', a.level);
+    } else if (a.kind === 'photoFilter') {
+      fx = fxs.addProperty('ADBE Photo Filter');
+      setFx(fx, 'ADBE Photo Filter-0002', [a.color[0], a.color[1], a.color[2], 1]); setFx(fx, 'ADBE Photo Filter-0003', a.density);
+      setFx(fx, 'ADBE Photo Filter-0004', a.keepLight ? 1 : 0);
+    }
+    if (d.opacity !== undefined && d.opacity < 1) L.property('ADBE Transform Group').property('ADBE Opacity').setValue(d.opacity * 100);
+    if (d.blend && BLEND[d.blend]) { try { L.blendingMode = BlendingMode[BLEND[d.blend]]; } catch (eB) {} }
+    return L;
+  }
+
+  // Tabs: After Effects puts its tab stops closer together than Photoshop does, so each
+  // tab becomes spaces that reach the next Photoshop tab stop, measured in the real font.
+  function expandTabs(text, d) {
+    if (!d.tabWidth || text.indexOf('\t') < 0) return text;
+    var ps = fontPostScriptName(d.fontFamily, d.fontStyle);
+    function widthOf(t) {
+      try {
+        ensureGlyphComp();
+        var prop = glyphLayer.property('ADBE Text Properties').property('ADBE Text Document'), td = prop.value;
+        td.text = 'x' + t + 'x'; td.font = ps; td.fontSize = d.fontSize; td.tracking = Math.round(d.tracking || 0);
+        prop.setValue(td);
+        return glyphLayer.sourceRectAtTime(0, false).width;
+      } catch (e) { return null; }
+    }
+    var xx = widthOf(''), sp = xx === null ? null : widthOf(' ') - xx;
+    if (!sp || sp <= 0) return text.split('\t').join('    ');
+    var lines = text.split('\r'), out = [];
+    for (var i = 0; i < lines.length; i++) {
+      var parts = lines[i].split('\t'), line = parts[0];
+      for (var k = 1; k < parts.length; k++) {
+        var w = line.length ? widthOf(line) - xx : 0;
+        if (w === null || isNaN(w)) w = 0;
+        var stop = (Math.floor(w / d.tabWidth + 0.001) + 1) * d.tabWidth;
+        var n = Math.max(1, Math.round((stop - w) / sp));
+        for (var q = 0; q < n; q++) line += ' ';
+        line += parts[k];
+      }
+      out.push(line);
+    }
+    return out.join('\r');
+  }
+
   var egpQueue = [];
   function applyEgpQueue(mainComp) {
     var seen = {};
@@ -1509,6 +1666,7 @@ var LayerBoatCore = (function () {
     var useLayout = lay && !justified;
     var isBox = useLayout ? false : (d.autoResize === 'NONE' || d.autoResize === 'HEIGHT' || d.autoResize === 'TRUNCATE');
     var text = useLayout ? lay.text : d.characters.replace(/\r\n|\n/g, '\r');
+    if (!useLayout && d.tabWidth) text = expandTabs(text, d);
     var segments = useLayout ? lay.segments : d.segments;
     var tA = now();
     var leading = useLayout && lay.lines > 1 && lay.step ? lay.step : d.leading;
@@ -1836,6 +1994,18 @@ var LayerBoatCore = (function () {
   // one Figma layer; returns early where the old loop used continue
   function buildItem(comp, d, parentNull, opts, created, inherited, byId) {
     {
+      if (d.type === 'adjustment') {
+        var AL = buildAdjustment(comp, d);
+        if (AL) { setParent(AL, parentNull); created.push(AL); }
+        return;
+      }
+      if (d.type === 'group' && d.component && COMPONENTS[d.component] && opts.components !== false) {
+        var IL = buildInstance(comp, d, opts);
+        setParent(IL, parentNull);
+        applyMatte(IL, byId[d.matte || inherited]);
+        created.push(IL);
+        return;
+      }
       if (d.type === 'mask') {
         var m = d.native ? nativeLayer(comp, d) : null;
         if (m) { m.name = d.name + ' (mask)'; m.enabled = false; m.label = 0; makeHelper(m); }
@@ -1981,15 +2151,17 @@ var LayerBoatCore = (function () {
     app.scheduleTask('$.global.__figmaBridgeRunJob()', 10, false);
   }
 
-  function build(data, opts) {
+  function build(data, opts, sharedMasters) {
     try { if (data) { noteFontHints(data.layers); for (var hm = 0; data.multi && hm < data.multi.length; hm++) noteFontHints(data.multi[hm].layers); } } catch (eHint) {}
     // several Figma frames sent together: one comp each
     if (data && data.multi && data.multi.length) {
       var each = {}, made = [];
       for (var ok in opts) if (opts.hasOwnProperty(ok)) each[ok] = opts[ok];
       each.intoActive = false;
+      // a component used in several frames is built once for all of them
+      MASTERS = {};
       for (var mi = 0; mi < data.multi.length; mi++) {
-        try { build(data.multi[mi], each); made.push(data.multi[mi].name); } catch (eM) { log('frame failed: ' + errText(eM)); }
+        try { build(data.multi[mi], each, true); made.push(data.multi[mi].name); } catch (eM) { log('frame failed: ' + errText(eM)); }
       }
       LayerBoatCore.lastStatus = 'Built ' + made.length + ' comps: ' + made.join(', ') + '.';
       return;
@@ -1997,6 +2169,8 @@ var LayerBoatCore = (function () {
     notes = {};
     T = {};
     NULL_SIZE = [];
+    COMPONENTS = data.components || {};
+    if (!sharedMasters) MASTERS = {};
     var tStart = now();
     log('build: ' + data.name);
     // developer copy of the last payload, only where the dev folder exists
@@ -3254,7 +3428,7 @@ var LayerBoatCore = (function () {
     if (data.raster) return 'OK ' + placeRaster(data.raster);
     if (!(data.layers && data.layers.length) && !(data.multi && data.multi.length)) return 'OK ' + (data.message || '');
     function opt(key, dflt) { try { if (app.settings.haveSetting('LayerBoat', key)) return app.settings.getSetting('LayerBoat', key) === '1'; } catch (e) {} return dflt; }
-    build(data, { intoActive: opt('intoActive', false), nulls: opt('nulls', true), combine: opt('combine', true), update: opt('update', true), centerAnchors: opt('centre', true) });
+    build(data, { intoActive: opt('intoActive', false), nulls: opt('nulls', true), combine: opt('combine', true), components: opt('components', true), update: opt('update', true), centerAnchors: opt('centre', true) });
     return 'OK ' + (LayerBoatCore.lastStatus || 'Done.');
   }
   function listen(onData, onStatus) {
