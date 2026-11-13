@@ -30,6 +30,7 @@
   const sendBtn = document.getElementById('send');
   let connected = false;
   let pickedUpAt = 0;
+  let sawBusy = false;
 
   async function ping() {
     let state = 'none';
@@ -40,8 +41,10 @@
     } catch (e) { state = 'none'; }
     // After Effects cannot answer while it builds, so a send it just took
     // counts as connected until it is free again
-    if (state !== 'live' && state !== 'none' && Date.now() - pickedUpAt < 180000) state = 'building';
-    if (state === 'live') pickedUpAt = 0;
+    if (pickedUpAt && Date.now() - pickedUpAt > 180000) pickedUpAt = 0;
+    if (state !== 'live' && state !== 'none' && pickedUpAt) { state = 'building'; sawBusy = true; }
+    // it can answer once more before it starts, so only a return after being busy ends the build
+    if (state === 'live' && sawBusy) pickedUpAt = 0;
     connected = state === 'live';
     dot.className = connected ? 'on' : '';
     if (state === 'building') dot.className = 'on';
@@ -85,18 +88,21 @@
   // confirms that After Effects picked the layers up, so a missed send never
   // goes unnoticed
   async function watchPickup(count, extra) {
+    // counts as in progress from the moment it is sent, so a busy After Effects never reads as missing
+    pickedUpAt = Date.now(); sawBusy = false;
     for (let i = 0; i < 24; i++) {
       await new Promise(res => setTimeout(res, 500));
       try {
         const t = await (await fetch(URL_AE + 'status')).text();
         if (t.indexOf('taken') >= 0) {
-          pickedUpAt = Date.now();
+          pickedUpAt = Date.now(); sawBusy = false;
           statusEl.className = 'ok';
           statusEl.textContent = 'After Effects received ' + count + ' layers and is building them.' + extra;
           return;
         }
       } catch (e) { break; }
     }
+    pickedUpAt = 0;
     statusEl.className = 'err';
     statusEl.textContent = 'After Effects has not picked this up yet. Check that the LayerBoat panel is open, then click Send again.';
   }
