@@ -55,6 +55,8 @@
 
   // 4. LayerBoat's own folder: the helper, the Figma plugin and the Illustrator panel
   rmTree(new Folder(Folder.userData.fsName + '/LayerBoat'));
+  // and the folder from before the rename
+  rmTree(new Folder(Folder.userData.fsName + '/Figma Bridge'));
 
   var msg = missed.length
     ? 'LayerBoat is mostly removed. These could not be deleted, so remove them by hand:\n\n' + missed.join('\n')
