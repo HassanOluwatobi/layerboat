@@ -43,9 +43,16 @@ function LayerBoatAI_import(opts) {
   tmp.write(text); tmp.close();
   try { drop.remove(); } catch (e3) {}
 
-  var oldCoords = app.coordinateSystem, g = null, ab = null, nd = null, note = '';
+  // Illustrator refuses to read or set its coordinate system while no document is open
+  var oldCoords = null, g = null, ab = null, nd = null, note = '';
+  function useDocCoords() {
+    try {
+      if (oldCoords === null) oldCoords = app.coordinateSystem;
+      app.coordinateSystem = CoordinateSystem.DOCUMENTCOORDINATESYSTEM;
+    } catch (eC) {}
+  }
   try {
-    app.coordinateSystem = CoordinateSystem.DOCUMENTCOORDINATESYSTEM;
+    if (app.documents.length) useDocCoords();
     var doc = (!app.documents.length || opts.newDocument) ? null : app.activeDocument, rect = null;
     if (doc) {
       // a new artboard the size of the frame: to the right of the others, or below them
@@ -68,6 +75,7 @@ function LayerBoatAI_import(opts) {
       // a new Illustrator document the size of the frame
       nd = app.documents.add(DocumentColorSpace.RGB, size[0], size[1]);
       doc = nd;
+      useDocCoords();
       ab = doc.artboards[0];
       rect = ab.artboardRect;
     }
@@ -114,7 +122,7 @@ function LayerBoatAI_import(opts) {
     try { if (nd) nd.close(SaveOptions.DONOTSAVECHANGES); else { if (g) g.remove(); if (ab) ab.remove(); } } catch (eG) {}
     return 'ERR ' + err + (err.line ? ' (line ' + err.line + ')' : '');
   } finally {
-    app.coordinateSystem = oldCoords;
+    try { if (oldCoords !== null) app.coordinateSystem = oldCoords; } catch (eR) {}
     try { tmp.remove(); } catch (e7) {}
   }
 

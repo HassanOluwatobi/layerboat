@@ -987,7 +987,8 @@ function LayerBoatAI_export(opts) {
 // width. The answer is left in the same inbox file the artwork goes through.
 function LayerBoatAI_pick() {
   var msg = null, out = null;
-  var oldCoords = app.coordinateSystem;
+  var oldCoords = null;
+  try { oldCoords = app.coordinateSystem; } catch (eOC) {}
   try {
     if (!app.documents.length) msg = 'Illustrator: open a document and select a shape first.';
     else {
@@ -1019,7 +1020,7 @@ function LayerBoatAI_pick() {
       }
     }
   } catch (e) { msg = 'Illustrator could not read the shape: ' + e; }
-  finally { app.coordinateSystem = oldCoords; }
+  finally { try { if (oldCoords !== null) app.coordinateSystem = oldCoords; } catch (eRC) {} }
   if (!out) out = '{"bridge":"figma-to-ae","source":"illustrator","layers":[],"message":"' + String(msg).split('"').join("'") + '"}';
   var box = new Folder(Folder.userData.fsName + '/LayerBoat');
   if (!box.exists) box.create();
@@ -1048,7 +1049,8 @@ function LayerBoatAI_pick() {
 // throwaway document, so nothing behind it shows, at twice its size.
 function LayerBoatAI_rasterize() {
   var msg = null, out = null, scratch = null;
-  var oldCoords = app.coordinateSystem;
+  var oldCoords = null;
+  try { oldCoords = app.coordinateSystem; } catch (eOC) {}
   try {
     if (!app.documents.length) msg = 'Illustrator: open a document first.';
     else {
@@ -1101,7 +1103,7 @@ function LayerBoatAI_rasterize() {
   } catch (e) { msg = 'Illustrator could not draw the image: ' + e; }
   finally {
     try { if (scratch) scratch.close(SaveOptions.DONOTSAVECHANGES); } catch (eC) {}
-    app.coordinateSystem = oldCoords;
+    try { if (oldCoords !== null) app.coordinateSystem = oldCoords; } catch (eRC) {}
   }
   if (!out) out = '{"bridge":"figma-to-ae","source":"illustrator","layers":[],"message":"' + String(msg).split('"').join("'") + '"}';
   var box = new Folder(Folder.userData.fsName + '/LayerBoat');
