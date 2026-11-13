@@ -1,0 +1,17 @@
+{
+  "name": "LayerBoat",
+  "id": "layerboat-local",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": [
+    "figma"
+  ],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "http://localhost:7317"
+    ],
+    "reasoning": "Talks to the LayerBoat helper on this computer, which passes layers to and from After Effects and Illustrator."
+  }
+}
