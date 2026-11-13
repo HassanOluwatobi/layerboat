@@ -15,7 +15,7 @@
 <link rel="icon" href="/layerboat/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/layerboat/apple-touch-icon.png">
 <style>
-  :root { --ink:#161c28; --soft:#5a6172; --faint:#8a90a0; --line:#ecebe8; --bg:#fafaf8; --accent:#0b6bf0; --accent2:#0958cc; --card:#ffffff; --chip:#f2f2f2;
+  :root { --ink:#232326; --soft:#5f5f67; --faint:#8b8b93; --line:#ebebeb; --bg:#fcfcfc; --card:#ffffff; --chip:#f2f2f2;
           --ae:#9999ff; --aebg:#1b1b2b; --ui:#232325; --ui2:#2c2c2f; --uiline:#3a3a3e; --uitext:#d6d6da; --uifaint:#8d8d95; }
   * { box-sizing:border-box; margin:0; padding:0; }
   html { scroll-behavior:smooth; }
@@ -38,7 +38,7 @@
   .btn:active { transform:scale(.975); }
   .meta { margin-top:14px; font-size:13px; color:var(--faint); }
   .phone-note { display:none; }
-  section { padding:96px 0; }
+  section { padding:72px 0; border-top:1px solid var(--line); }
   .demo { margin:0 0 96px; }
   .demo video { display:block; width:100%; height:auto; aspect-ratio:16/10; border-radius:18px; background:#141416; box-shadow:0 1px 2px rgba(0,0,0,.08), 0 24px 60px rgba(0,0,0,.16); cursor:pointer; }
   .demo p { text-align:center; font-size:14px; color:var(--faint); margin-top:16px; }
@@ -148,24 +148,6 @@
     footer { flex-direction:column; }
   }
   @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .btn, summary::after, .seg button { transition:none; } .fade { animation:none; } }
-
-  /* clean pass: one blue accent, navy ink, soft washes, no dividers */
-  .btn { background:var(--accent); box-shadow:0 1px 2px rgba(10,40,120,.2), 0 8px 20px rgba(11,107,240,.25); }
-  .btn:hover { background:var(--accent2); box-shadow:0 1px 2px rgba(10,40,120,.2), 0 12px 26px rgba(11,107,240,.32); }
-  .hero { position:relative; }
-  .hero::before { content:""; position:absolute; z-index:-1; left:50%; top:10px; width:900px; height:520px; transform:translateX(-50%); background:radial-gradient(40% 50% at 30% 50%, rgba(160,195,255,.38), transparent 70%), radial-gradient(38% 48% at 72% 55%, rgba(255,205,170,.38), transparent 70%); filter:blur(30px); pointer-events:none; }
-  #features { position:relative; }
-  #features::before { content:""; position:absolute; z-index:-1; left:-280px; top:220px; width:560px; height:460px; border-radius:50%; background:rgba(170,200,255,.30); filter:blur(90px); pointer-events:none; }
-  #compare::before { content:""; position:absolute; z-index:-1; right:-260px; top:80px; width:520px; height:420px; border-radius:50%; background:rgba(255,212,180,.30); filter:blur(90px); pointer-events:none; }
-  #compare { position:relative; }
-  .feature + .feature { border-top:0; }
-  .stage { background:#fff; border:1px solid var(--line); box-shadow:0 1px 2px rgba(22,28,40,.03), 0 12px 32px rgba(22,28,40,.05); border-radius:20px; }
-  ol.steps li, .route .st, details, .pick .card { border-radius:16px; box-shadow:0 1px 2px rgba(22,28,40,.03); }
-  ol.steps li::before { background:var(--accent); }
-  summary::after { content:"+"; width:22px; height:22px; border-radius:50%; background:#eef4ff; color:var(--accent); display:grid; place-items:center; font-size:16px; }
-  .seg button:focus-visible { outline-color:var(--accent); }
-  header nav a.dl { background:var(--accent); color:#fff; padding:8px 14px; border-radius:9px; font-weight:600; }
-  header nav a.dl:hover { color:#fff; background:var(--accent2); }
 </style>
 <style>
   .cmp { width:100%; border-collapse:separate; border-spacing:0; background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; font-size:15px; }
@@ -203,7 +185,7 @@
 <div class="wrap">
   <header>
     <a href="/layerboat"><img src="/layerboat/logo-lockup.svg" alt="LayerBoat"></a>
-    <nav><a href="#features">Features</a><a href="#install">Install</a><a href="#use">How to use</a><a href="/layerboat/compare">Compare</a><a href="#faq">FAQ</a><a href="https://github.com/HassanOluwatobi/layerboat">GitHub</a><a class="dl" href="https://github.com/HassanOluwatobi/layerboat/releases/latest">Download</a></nav>
+    <nav><a href="#features">Features</a><a href="#install">Install</a><a href="#use">How to use</a><a href="/layerboat/compare">Compare</a><a href="#faq">FAQ</a><a href="https://github.com/HassanOluwatobi/layerboat">GitHub</a></nav>
   </header>
 
   <div class="hero">
