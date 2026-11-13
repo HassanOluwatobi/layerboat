@@ -39,6 +39,10 @@
   .meta { margin-top:14px; font-size:13px; color:var(--faint); }
   .phone-note { display:none; }
   section { padding:72px 0; border-top:1px solid var(--line); }
+  .demo { margin:0 0 96px; }
+  .demo video { display:block; width:100%; height:auto; aspect-ratio:16/10; border-radius:18px; background:#141416; box-shadow:0 1px 2px rgba(0,0,0,.08), 0 24px 60px rgba(0,0,0,.16); cursor:pointer; }
+  .demo p { text-align:center; font-size:14px; color:var(--faint); margin-top:16px; }
+  @media (max-width:600px) { .demo { margin-bottom:64px; } .demo video { border-radius:12px; } }
   .sec-head { max-width:620px; margin-bottom:40px; }
   .sec-head h2 { font-family:"Geist Serif", "Iowan Old Style", Georgia, serif; font-weight:400; font-size:38px; line-height:1.12; letter-spacing:-.015em; margin-bottom:12px; }
   .sec-head p { color:var(--soft); font-size:17px; }
@@ -197,6 +201,12 @@
     <p class="phone-note">LayerBoat runs on a Mac or PC. Open this page there to install it.</p>
     <p class="meta" id="dl-meta">For Mac and Windows · After Effects, Illustrator, Photoshop and Figma</p>
   </div>
+
+
+  <figure class="demo">
+    <video id="demo" src="/layerboat/demo.mp4" poster="/layerboat/demo-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="A Figma icon set and a dashboard sent to After Effects with LayerBoat. Every shape and line of text arrives as its own layer."></video>
+    <p>Two real Figma files sent to After Effects. Every outline you see is its own editable layer.</p>
+  </figure>
 
   <section id="features">
     <div class="sec-head">
@@ -431,5 +441,8 @@ fetch('https://api.github.com/repos/HassanOluwatobi/layerboat/releases/latest')
   })
   .catch(function () {});
 </script>
+<script>(function(){var v=document.getElementById('demo');if(!v)return;
+if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){v.removeAttribute('autoplay');v.pause();}
+v.addEventListener('click',function(){v.paused?v.play():v.pause();});})();</script>
 </body>
 </html>
