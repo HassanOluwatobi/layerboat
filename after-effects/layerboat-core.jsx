@@ -1,6 +1,6 @@
 // LayerBoat: core builder. Loaded by the panel and by the test runner.
 var LayerBoatCore = (function () {
-  var VERSION = '1.6';
+  var VERSION = '1.7';
   var LOG_FILE = null;
   // an error as text; some After Effects errors cannot be added to a string directly
   function errText(x) {
@@ -53,9 +53,10 @@ var LayerBoatCore = (function () {
     } catch (e) { return true; }
   }
 
-  // After Effects' JSON.parse is written in script and takes half a minute on a big
-  // design. A file Illustrator left in the user's own LayerBoat folder is read with
-  // eval, in under a second. Text from the network always goes through JSON.parse.
+  // After Effects' JSON.parse is written in script and takes minutes on a big design.
+  // A file Illustrator left in the user's own LayerBoat folder, and data the helper
+  // has checked is plain JSON, are read with eval, in about a second. Anything else
+  // (the clipboard) goes through JSON.parse.
   function parseData(text, trusted) {
     if (!text) return null;
     var start = text.indexOf('{');
@@ -63,7 +64,7 @@ var LayerBoatCore = (function () {
     text = text.substring(start);
     var data;
     try {
-      if (trusted) data = eval('(' + text + ')');
+      if (trusted) { try { data = eval('(' + text + ')'); } catch (eE) { data = (typeof JSON !== 'undefined' && JSON.parse) ? JSON.parse(text) : null; } }
       else if (typeof JSON !== 'undefined' && JSON.parse) data = JSON.parse(text);
       else return null;
     } catch (e) { log('could not read the design: ' + errText(e)); return null; }
@@ -2235,10 +2236,11 @@ var LayerBoatCore = (function () {
     s.encoding = 'BINARY';
     if (!s.open('127.0.0.1:' + PORT, 'BINARY')) return null;
     s.write('POST ' + path + ' HTTP/1.0\r\nHost: 127.0.0.1\r\nContent-Type: text/plain\r\nContent-Length: ' + body.length + '\r\n\r\n');
-    for (var i = 0; i < body.length; i += 65536) s.write(body.substr(i, 65536));
-    var resp = '', guard = 0;
-    while (!s.eof && guard < 100000) { var c = s.read(65536); if (c) resp += c; else guard += 1000; guard++; }
+    for (var i = 0; i < body.length; i += 1048576) s.write(body.substr(i, 1048576));
+    var parts = [], guard = 0;
+    while (!s.eof && guard < 100000) { var c = s.read(65536); if (c) parts.push(c); else guard += 1000; guard++; }
     s.close();
+    var resp = parts.join('');
     var cut = resp.indexOf('\r\n\r\n');
     if (cut < 0) return null;
     return { status: parseInt(resp.substring(0, resp.indexOf('\r\n')).split(' ')[1], 10), body: resp.substring(cut + 4) };
@@ -2248,16 +2250,41 @@ var LayerBoatCore = (function () {
     return JSON.stringify(o).replace(/[\u007f-￿]/g, function (ch) { return '\\u' + ('0000' + ch.charCodeAt(0).toString(16)).slice(-4); });
   }
   var B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  // every pair of base64 letters, so each 3 bytes take two lookups
+  var B64PAIRS = null;
   function base64Of(bin) {
-    var out = [], i;
+    if (!B64PAIRS) { B64PAIRS = []; for (var p = 0; p < 4096; p++) B64PAIRS.push(B64.charAt(p >> 6) + B64.charAt(p & 63)); }
+    var out = [], part = [], i, P = B64PAIRS;
     for (i = 0; i + 2 < bin.length; i += 3) {
       var n = (bin.charCodeAt(i) << 16) | (bin.charCodeAt(i + 1) << 8) | bin.charCodeAt(i + 2);
-      out.push(B64.charAt(n >> 18 & 63) + B64.charAt(n >> 12 & 63) + B64.charAt(n >> 6 & 63) + B64.charAt(n & 63));
+      part.push(P[n >> 12] + P[n & 4095]);
+      if (part.length === 8192) { out.push(part.join('')); part = []; }
     }
+    out.push(part.join(''));
     var rest = bin.length - i;
     if (rest === 1) { var a = bin.charCodeAt(i) << 16; out.push(B64.charAt(a >> 18 & 63) + B64.charAt(a >> 12 & 63) + '=='); }
     else if (rest === 2) { var b = (bin.charCodeAt(i) << 16) | (bin.charCodeAt(i + 1) << 8); out.push(B64.charAt(b >> 18 & 63) + B64.charAt(b >> 12 & 63) + B64.charAt(b >> 6 & 63) + '='); }
     return out.join('');
+  }
+
+  // A file as base64. On a Mac the system's own encoder does it in a blink.
+  function base64OfFile(file) {
+    if ($.os.toLowerCase().indexOf('mac') !== -1) {
+      try {
+        var tmp = new File(Folder.temp.fsName + '/layerboat-b64-' + new Date().getTime() + '.txt');
+        system.callSystem('/usr/bin/base64 -i "' + file.fsName + '" -o "' + tmp.fsName + '"');
+        if (tmp.exists && tmp.length > 0) {
+          tmp.encoding = 'BINARY'; tmp.open('r'); var t = tmp.read(); tmp.close();
+          try { tmp.remove(); } catch (eR) {}
+          t = t.split('\n').join('').split('\r').join('');
+          if (t.length) return t;
+        }
+      } catch (e) { log('system base64 failed: ' + errText(e)); }
+    }
+    file.encoding = 'BINARY';
+    if (!file.open('r')) return null;
+    var bin = file.read(); file.close();
+    return base64Of(bin);
   }
 
   // 2D affine matrices as [a, b, c, d, e, f]: x' = a x + c y + e, y' = b x + d y + f
@@ -2523,7 +2550,7 @@ var LayerBoatCore = (function () {
         $.sleep(100);
       }
       if (file.exists && file.length > 0) {
-        file.encoding = 'BINARY'; file.open('r'); out = base64Of(file.read()); file.close();
+        out = base64OfFile(file);
         try { file.remove(); } catch (eR) {}
       }
     } catch (e) { log('footage to png failed: ' + errText(e)); out = null; }
@@ -2579,7 +2606,7 @@ var LayerBoatCore = (function () {
       var f = L.source.mainSource.file, key;
       if (f && /\.(png|jpe?g|gif)$/i.test(f.name)) {
         key = f.fsName;
-        if (!images[key]) { f.encoding = 'BINARY'; f.open('r'); images[key] = base64Of(f.read()); f.close(); }
+        if (!images[key]) images[key] = base64OfFile(f);
       } else {
         // Photoshop layers, TIFFs, vector files and video frames: After Effects draws
         // them to a PNG first, so they arrive as images
@@ -2632,11 +2659,16 @@ var LayerBoatCore = (function () {
     var only = selectionOnly(comp);
     var warn = {}, images = {}, layers = [];
     exportComp(comp, layers, warn, images, only);
-    var payload = { bridge: 'ae-to-figma', version: 1, name: comp.name, width: comp.width, height: comp.height, background: null, layers: layers, images: images, warnings: [] };
+    var payload = { bridge: 'ae-to-figma', version: 1, name: comp.name, width: comp.width, height: comp.height, background: null, layers: layers, warnings: [] };
     for (var w in warn) if (warn.hasOwnProperty(w)) payload.warnings.push(w);
     if (!relayRunning() && !startRelay()) return 'Could not start the LayerBoat relay.';
     var ping = httpGet('/ping?from=ae');
+    // the images are base64, which needs no escaping, so they are joined in as they are
+    // instead of going through After Effects' slow JSON.stringify
+    var imgParts = [];
+    for (var ik in images) if (images.hasOwnProperty(ik) && images[ik]) imgParts.push(asciiJSON(ik) + ':"' + images[ik] + '"');
     var body = asciiJSON(payload);
+    body = body.substring(0, body.length - 1) + ',"images":{' + imgParts.join(',') + '}}';
     if (HOME && Folder(HOME + '/dev/dumps').exists) { try { var df = new File(HOME + '/dev/dumps/to-figma.json'); df.open('w'); df.write(body); df.close(); } catch (eD) {} }
     var r = httpPost('/send?to=figma', body);
     if (!r || r.status !== 200) return 'Could not reach the LayerBoat relay.';
@@ -3101,14 +3133,15 @@ var LayerBoatCore = (function () {
     s.timeout = 3;
     if (!s.open('127.0.0.1:' + PORT, 'BINARY')) return null;
     s.write('GET ' + path + ' HTTP/1.0\r\nHost: 127.0.0.1\r\n\r\n');
-    var resp = '';
+    var parts = [];
     var guard = 0;
     while (!s.eof && guard < 100000) {
-      var chunk = s.read(65536);
-      if (chunk) resp += chunk; else guard += 1000;
+      var chunk = s.read(1048576);
+      if (chunk) parts.push(chunk); else guard += 1000;
       guard++;
     }
     s.close();
+    var resp = parts.join('');
     var cut = resp.indexOf('\r\n\r\n');
     if (cut < 0) return null;
     var status = parseInt(resp.substring(0, resp.indexOf('\r\n')).split(' ')[1], 10);
@@ -3116,27 +3149,38 @@ var LayerBoatCore = (function () {
   }
 
   function fromBase64(b64) {
-    var map = {}, i, out = [], buf = 0, bits = 0;
-    for (i = 0; i < 64; i++) map['ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.charAt(i)] = i;
-    for (i = 0; i < b64.length; i++) {
-      var v = map[b64.charAt(i)];
-      if (v === undefined) continue;
-      buf = ((buf << 6) | v) & 0xffffff; bits += 6;
-      if (bits >= 8) { bits -= 8; out.push(String.fromCharCode((buf >> bits) & 255)); }
-      if (out.length >= 8192) out = [out.join('')];
+    var A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', code = [], i;
+    for (i = 0; i < 256; i++) code.push(-1);
+    for (i = 0; i < 64; i++) code[A.charCodeAt(i)] = i;
+    var clean = b64.split('\n').join('').split('\r').join('').split(' ').join('');
+    var pad = clean.charAt(clean.length - 1) === '=' ? (clean.charAt(clean.length - 2) === '=' ? 2 : 1) : 0;
+    var end = clean.length - (pad ? 4 : 0), out = [], part = [], F = String.fromCharCode;
+    for (i = 0; i < end; i += 4) {
+      var n = (code[clean.charCodeAt(i)] << 18) | (code[clean.charCodeAt(i + 1)] << 12) | (code[clean.charCodeAt(i + 2)] << 6) | code[clean.charCodeAt(i + 3)];
+      part.push(F(n >> 16 & 255, n >> 8 & 255, n & 255));
+      if (part.length === 8192) { out.push(part.join('')); part = []; }
     }
+    if (pad) {
+      var a = code[clean.charCodeAt(end)], b = code[clean.charCodeAt(end + 1)];
+      var c = pad === 1 ? code[clean.charCodeAt(end + 2)] : 0;
+      var m = (a << 18) | (b << 12) | (c << 6);
+      part.push(pad === 1 ? F(m >> 16 & 255, m >> 8 & 255) : F(m >> 16 & 255));
+    }
+    out.push(part.join(''));
     return out.join('');
   }
   function isWindows() { return $.os.toLowerCase().indexOf('windows') !== -1; }
   // The helper from before the rename answers on the same port but saves into the old
   // folder, so it is asked to stop once, and this version's helper starts instead.
   var helperChecked = false;
+  // this version's helper checks that everything Figma sends is plain JSON
+  var HELPER_ID = 'layerboat-helper 2';
   function relayRunning() {
     var r = httpGet('/ping');
     if (!(r && r.status === 200 && r.body.indexOf('relay') === 0)) return false;
     if (helperChecked) return true;
     var who = httpGet('/who');
-    if (who && who.body === 'layerboat-helper') { helperChecked = true; return true; }
+    if (who && who.body === HELPER_ID) { helperChecked = true; return true; }
     log('an older helper is running; stopping it');
     httpGet('/quit');
     $.sleep(400);
@@ -3241,7 +3285,8 @@ var LayerBoatCore = (function () {
         }
         else if (r.status === 200 && r.body) {
           log('live: received ' + r.body.length + ' chars');
-          data = parseData(r.body);
+          // the helper has checked it is plain JSON, so the fast reader is safe
+          data = parseData(r.body, helperChecked);
           // a message from another app, with nothing to build
           if (data && data.message && !(data.layers && data.layers.length)) { G.__figmaBridgeOnStatus(data.message); data = null; }
         }

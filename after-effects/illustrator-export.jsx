@@ -33,17 +33,23 @@ function LayerBoatAI_export(opts) {
   // images for Figma travel inside the data, as base64, and so do the shapes, as SVG
   var IMAGES = {};
   var SVG_TEXT = null;
+  var B64PAIRS = null;
   function base64Of(file) {
     var T = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    if (!B64PAIRS) { B64PAIRS = []; for (var p = 0; p < 4096; p++) B64PAIRS.push(T.charAt(p >> 6) + T.charAt(p & 63)); }
     file.encoding = 'BINARY';
     if (!file.open('r')) return null;
     var bin = file.read(); file.close();
-    var out = [], n = bin.length;
-    for (var i = 0; i < n; i += 3) {
-      var a = bin.charCodeAt(i) & 255, b = i + 1 < n ? bin.charCodeAt(i + 1) & 255 : 0, c = i + 2 < n ? bin.charCodeAt(i + 2) & 255 : 0;
-      var t = (a << 16) | (b << 8) | c;
-      out.push(T.charAt((t >> 18) & 63) + T.charAt((t >> 12) & 63) + (i + 1 < n ? T.charAt((t >> 6) & 63) : '=') + (i + 2 < n ? T.charAt(t & 63) : '='));
+    var out = [], part = [], n = bin.length, P = B64PAIRS, i;
+    for (i = 0; i + 2 < n; i += 3) {
+      var t = ((bin.charCodeAt(i) & 255) << 16) | ((bin.charCodeAt(i + 1) & 255) << 8) | (bin.charCodeAt(i + 2) & 255);
+      part.push(P[t >> 12] + P[t & 4095]);
+      if (part.length === 8192) { out.push(part.join('')); part = []; }
     }
+    var rest = n - i;
+    if (rest === 1) { var a = (bin.charCodeAt(i) & 255) << 16; part.push(P[a >> 12] + '=='); }
+    else if (rest === 2) { var b = ((bin.charCodeAt(i) & 255) << 16) | ((bin.charCodeAt(i + 1) & 255) << 8); part.push(P[b >> 12] + T.charAt((b >> 6) & 63) + '='); }
+    out.push(part.join(''));
     return out.join('');
   }
   try {
@@ -559,8 +565,7 @@ function LayerBoatAI_export(opts) {
       var o = base(tf, 'Text');
       o.type = 'text';
       o.name = ownName(tf) || cleanText(tf.contents) || 'Text';
-      var raw = String(tf.contents), text = '';
-      for (var ci = 0; ci < raw.length; ci++) text += raw.charCodeAt(ci) === 3 ? String.fromCharCode(13) : raw.charAt(ci);
+      var text = String(tf.contents).split(String.fromCharCode(3)).join(String.fromCharCode(13));
       o.characters = text;
       var segs = [], pos = 0, runs = tf.textRanges;
       for (var i = 0; i < runs.length; i++) {

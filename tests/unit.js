@@ -24,6 +24,7 @@ const load = (src, names) => { new Function('ctx', names.map((n) => grab(src, n)
 load(core, ['svd2', 'groupTransformOf', 'inv2', 'mMul', 'mR', 'mS', 'mT', 'mApply', 'groupMatrix', 'fromBase64', 'base64Of', 'asciiJSON', 'pathData']);
 ctx.B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 global.B64 = ctx.B64;
+global.B64PAIRS = null;
 load(plugin, ['r', 'invert', 'apply', 'mul', 'parsePathData', 'gradientPaint']);
 global.r = ctx.r;
 
@@ -58,6 +59,14 @@ for (let t = 0; t < 20; t++) {
   const bin = b.toString('latin1');
   check('base64 encode', ctx.base64Of(bin) === b.toString('base64'));
   check('base64 decode', ctx.fromBase64(b.toString('base64')) === bin);
+  // every length remainder, and a large file
+  for (const len of [0, 1, 2, 3, 4, 5, 6, 7, 24577, 24578, 24579, 3000000]) {
+    const big = Buffer.alloc(len); for (let i = 0; i < len; i++) big[i] = (i * 7919 + (i >> 8)) & 255;
+    const bb = big.toString('latin1');
+    check('base64 encode ' + len, ctx.base64Of(bb) === big.toString('base64'));
+    check('base64 decode ' + len, ctx.fromBase64(big.toString('base64')) === bb);
+  }
+  check('base64 decode with line breaks', ctx.fromBase64('aGVs\nbG8=') === 'hello');
 }
 // JSON sent as plain ASCII still means the same thing
 const sample = { name: '₦50,000 · café 你好 🙂', n: [1, 2.5] };

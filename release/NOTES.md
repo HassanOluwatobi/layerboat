@@ -2,7 +2,7 @@ Move layers between Figma, Illustrator and After Effects, both ways. Real shapes
 
 ## Install
 
-1. Download **LayerBoat 1.6.zip** below and unzip it.
+1. Download **LayerBoat 1.7.zip** below and unzip it.
 2. Open After Effects. Go to File > Scripts > Run Script File and pick **Install LayerBoat.jsx**.
 3. Restart After Effects. Open the panel from Window > LayerBoat.jsx.
 4. In Figma, go to Plugins > Development > Import plugin from manifest and pick **Figma Plugin/manifest.json**.

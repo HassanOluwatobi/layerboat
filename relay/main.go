@@ -5,6 +5,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -159,6 +161,16 @@ func main() {
 				io.WriteString(w, "queued")
 				return
 			}
+			if b == "ae" {
+				// After Effects reads this with its fast reader, which is only safe for
+				// plain JSON, so anything else is turned away here
+				start := bytes.IndexByte(body, '{')
+				if start < 0 || !json.Valid(body[start:]) {
+					http.Error(w, "not json", http.StatusBadRequest)
+					return
+				}
+				body = body[start:]
+			}
 			mu.Lock()
 			pending[b] = body
 			if b == "figma" {
@@ -189,7 +201,8 @@ func main() {
 			io.WriteString(w, "bye")
 			go func() { time.Sleep(100 * time.Millisecond); os.Exit(0) }()
 		default:
-			io.WriteString(w, "layerboat-helper")
+			// "2": checks that what Figma sends is plain JSON
+			io.WriteString(w, "layerboat-helper 2")
 		}
 	})
 	if dir := home(); dir != "" {
