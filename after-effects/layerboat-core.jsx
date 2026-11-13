@@ -1,6 +1,6 @@
 // LayerBoat: core builder. Loaded by the panel and by the test runner.
 var LayerBoatCore = (function () {
-  var VERSION = '1.7';
+  var VERSION = '1.8';
   var LOG_FILE = null;
   // an error as text; some After Effects errors cannot be added to a string directly
   function errText(x) {
@@ -2038,7 +2038,7 @@ var LayerBoatCore = (function () {
       log('built ' + created.length + ' layers in ' + secs + 's | ' + parts.join(' '));
       var msg = [];
       for (var n in notes) if (notes.hasOwnProperty(n)) msg.push(n);
-      if (data.source === 'illustrator' && data.warnings) for (var wi = 0; wi < data.warnings.length; wi++) msg.push(data.warnings[wi]);
+      if ((data.source === 'illustrator' || data.source === 'photoshop') && data.warnings) for (var wi = 0; wi < data.warnings.length; wi++) msg.push(data.warnings[wi]);
       // Illustrator's scripting slows down the longer it runs; a restart brings it back
       if (data.source === 'illustrator' && data.stats && data.stats.seconds > 20) msg.push('Illustrator took ' + Math.round(data.stats.seconds) + ' seconds. Its scripting slows down over a long session, so restarting Illustrator makes the next send faster.');
       LayerBoatCore.lastStatus = (before ? 'Updated ' : 'Built ') + created.length + ' layers in ' + secs + 's.' + (msg.length ? ' ' + msg.join(' ') : '');
@@ -3236,7 +3236,7 @@ var LayerBoatCore = (function () {
     if (!data) return 'ERR the artwork could not be read';
     if (data.update) return 'OK ' + applyUpdate(data.update);
     if (data.raster) return 'OK ' + placeRaster(data.raster);
-    if (!(data.layers && data.layers.length)) return 'OK ' + (data.message || '');
+    if (!(data.layers && data.layers.length) && !(data.multi && data.multi.length)) return 'OK ' + (data.message || '');
     function opt(key, dflt) { try { if (app.settings.haveSetting('LayerBoat', key)) return app.settings.getSetting('LayerBoat', key) === '1'; } catch (e) {} return dflt; }
     build(data, { intoActive: opt('intoActive', false), nulls: opt('nulls', true), combine: opt('combine', true), update: opt('update', true), centerAnchors: opt('centre', true) });
     return 'OK ' + (LayerBoatCore.lastStatus || 'Done.');

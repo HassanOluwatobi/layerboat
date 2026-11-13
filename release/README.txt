@@ -4,7 +4,7 @@ LayerBoat
 Sends Figma frames and layers, and Illustrator artwork, to After Effects as
 native, editable layers: shapes, text, gradients, images, strokes, shadows,
 blurs, masks and groups. It also moves artwork between Illustrator and Figma,
-both ways.
+both ways, and sends Photoshop documents to After Effects.
 
 Install (Mac and Windows)
 1. Unzip this folder and keep its files together.
@@ -49,6 +49,18 @@ The LayerBoat panel in Illustrator
   it tells you what happened under the buttons.
 - If your Illustrator lets the installer add scripts to its Scripts menu,
   the panel is also at File > Scripts > LayerBoat - LayerBoat Panel.
+
+Photoshop to After Effects
+- Have After Effects open. The LayerBoat panel can stay closed.
+- Open your document in Photoshop. Hide any layers you want to leave out.
+- Choose File > Scripts > LayerBoat - Send to After Effects. Restart
+  Photoshop once after installing so the script shows up there. If it does
+  not, choose File > Scripts > Browse and pick
+  LayerBoat/Photoshop/Send to After Effects.jsx in this folder.
+- A new comp appears. Text stays editable, plain shapes become shape layers
+  and groups stay groups. Other layers arrive as images with their layer
+  styles drawn in. Adjustment layers are left out. Each artboard becomes
+  its own comp.
 
 Illustrator to After Effects
 - Open your artwork in Illustrator. Select what you want, or select nothing

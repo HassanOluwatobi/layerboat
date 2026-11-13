@@ -123,6 +123,20 @@
     }
   } } catch (eAi) {}
 
+  // 3c. The Photoshop script, in every Photoshop's own Scripts menu
+  var psAdded = 0;
+  try { var psSrc = src.fsName + '/Photoshop/Send to After Effects.jsx';
+    if (new File(psSrc).exists && ensure(new Folder(home.fsName + '/Photoshop'))) {
+      copy(psSrc, home.fsName + '/Photoshop/Send to After Effects.jsx');
+      var psRoot = isMac ? new Folder('/Applications') : new Folder(($.getenv('ProgramFiles') || 'C:/Program Files') + '/Adobe');
+      var pss = psRoot.exists ? psRoot.getFiles('Adobe Photoshop*') : [];
+      for (var pi = 0; pi < pss.length; pi++) {
+        if (!(pss[pi] instanceof Folder)) continue;
+        var psf = new Folder(pss[pi].fsName + '/Presets/Scripts');
+        if (psf.exists && copy(psSrc, psf.fsName + '/LayerBoat - Send to After Effects.jsx')) psAdded++;
+      }
+    } } catch (ePs) {}
+
   // 4. The panel, for every After Effects version on this computer
   var panelSrc = src.fsName + '/LayerBoat.jsx';
   var prefsRoot = isMac ? new Folder('~/Library/Preferences/Adobe/After Effects') : new Folder(Folder.userData.fsName + '/Adobe/After Effects');
@@ -161,6 +175,8 @@
   var aiText = aiAdded ? 'Illustrator: restart it once. Then choose File > Scripts > LayerBoat - LayerBoat Panel. The panel stays open beside your artwork.' :
     'Illustrator: use the Bring in from Illustrator button in the panel. To work from Illustrator itself, run LayerBoat/Illustrator/LayerBoat Panel.jsx with File > Scripts > Other Script.';
   w.add('statictext', undefined, aiText, { multiline: true }).preferredSize = [560, 34];
+  w.add('statictext', undefined, psAdded ? 'Photoshop: restart it once. Then choose File > Scripts > LayerBoat - Send to After Effects.' :
+    'Photoshop: choose File > Scripts > Browse and pick LayerBoat/Photoshop/Send to After Effects.jsx.', { multiline: true }).preferredSize = [560, 34];
   if (report.length) w.add('statictext', undefined, report.join(' '), { multiline: true }).preferredSize = [420, 50];
   copyBtn.onClick = function () {
     if (isMac) sh('/bin/sh -c "printf \'%s\' \'' + manifest + '\' | pbcopy"');

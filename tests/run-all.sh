@@ -6,7 +6,7 @@ echo "== unit tests"
 node tests/unit.js
 node tests/illustrator-nodoc.js
 echo "== lint"
-for f in release/illustrator-panel.jsx after-effects/layerboat-core.jsx after-effects/illustrator-export.jsx after-effects/illustrator-import.jsx figma-plugin/code.js "release/Install LayerBoat.jsx"; do cp "$f" /tmp/lint-check.js; (cd tools && [ -d node_modules ] || npm install --silent) && (cd tools && npx eslint -c .eslintrc.json --no-eslintrc /tmp/lint-check.js); done
+for f in release/illustrator-panel.jsx after-effects/layerboat-core.jsx after-effects/illustrator-export.jsx after-effects/illustrator-import.jsx photoshop/photoshop-export.jsx "release/Uninstall LayerBoat.jsx" figma-plugin/code.js "release/Install LayerBoat.jsx"; do cp "$f" /tmp/lint-check.js; (cd tools && [ -d node_modules ] || npm install --silent) && (cd tools && npx eslint -c .eslintrc.json --no-eslintrc /tmp/lint-check.js); done
 echo "lint clean"
 echo "== helper build"
 [ -f relay/layerboat-helper-arm64 ] || sh relay/build.sh

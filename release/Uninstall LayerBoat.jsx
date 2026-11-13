@@ -65,6 +65,15 @@
     }
   }
 
+  // 3b. The Photoshop script
+  var pss = appRoot.exists ? appRoot.getFiles('Adobe Photoshop*') : [];
+  for (var pi = 0; pi < pss.length; pi++) {
+    if (!(pss[pi] instanceof Folder)) continue;
+    var psf = new Folder(pss[pi].fsName + '/Presets/Scripts');
+    var psMine = psf.exists ? psf.getFiles('LayerBoat - *.jsx') : [];
+    for (var pm = 0; pm < psMine.length; pm++) rmTree(psMine[pm]);
+  }
+
   // 4. LayerBoat's own folder: the helper, the Figma plugin and the Illustrator panel
   rmTree(new Folder(Folder.userData.fsName + '/LayerBoat'));
   // and the folder from before the rename

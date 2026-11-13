@@ -135,11 +135,11 @@ ARTICLES['vs-overlord'] = dict(
     <h1>LayerBoat vs Overlord</h1>
     <p class="dek">Overlord is the tool most motion designers reach for to get artwork into After Effects. LayerBoat covers the same core job between Figma, Illustrator and After Effects, for free. Here's where each one is the better pick.</p>
     ''' + DISCLOSURE + '''
-    <div class="verdict"><p><b>The short answer.</b> If you move work between Figma, Illustrator and After Effects, LayerBoat does that for free with no licence to manage. If you also need Photoshop layers, or Figma components as Essential Graphics, Overlord is worth its $75.</p></div>
+    <div class="verdict"><p><b>The short answer.</b> If you move work between Figma, Illustrator, Photoshop and After Effects, LayerBoat does that for free with no licence to manage. If you need Photoshop adjustment layers and live layer styles, or Figma components as Essential Graphics, Overlord is worth its $75.</p></div>
     <div class="wide">%(table)s</div>
     <h2>What each tool is</h2>
     <p>Overlord is a paid tool from Battle Axe, the studio behind several well-known After Effects tools. It started as a bridge from Illustrator to After Effects and has grown to cover Figma and Photoshop. It runs as a desktop app with a free Figma plugin that connects to it.</p>
-    <p>LayerBoat is a free, open source tool that moves layers between Figma, Illustrator and After Effects in every direction. It installs as a panel in After Effects, a panel in Illustrator and a plugin in Figma.</p>
+    <p>LayerBoat is a free, open source tool that moves layers between Figma, Illustrator and After Effects in every direction, and sends Photoshop documents to After Effects. It installs as a panel in After Effects, a panel in Illustrator, a script in Photoshop and a plugin in Figma.</p>
     <h2>Price and licence</h2>
     <p>Overlord costs $75 per user as a one-time purchase. That includes a year of feature updates. After that you can renew to get newer features, and Overlord keeps working if you don't. Each licence covers two machines for one person.</p>
     <p>LayerBoat costs nothing. There's no licence key, no machine limit and no renewal. The code is MIT licensed, so a studio can install it on every machine it has.</p>
@@ -148,7 +148,7 @@ ARTICLES['vs-overlord'] = dict(
     <p>Both handle Figma and Illustrator in both directions with After Effects, and both move work between Figma and Illustrator. LayerBoat also rebuilds a frame in place when you send it again, keeping the keyframes and effects you've added.</p>
     <h2>Where Overlord is ahead</h2>
     <ul>
-      <li><b>Photoshop.</b> Overlord brings Photoshop layers into After Effects, including adjustment layers, masks and layer styles. LayerBoat doesn't work with Photoshop.</li>
+      <li><b>Photoshop depth.</b> Both tools send Photoshop layers to After Effects. Overlord also carries adjustment layers and keeps layer styles live. LayerBoat keeps text editable and plain shapes as shapes, draws layer styles into images and leaves adjustment layers out.</li>
       <li><b>Figma components.</b> Overlord can bring a Figma component in as an Essential Graphics precomp, so every copy shares one master. LayerBoat brings each copy in as its own layers.</li>
       <li><b>Support.</b> Overlord has direct licence support and a Discord community. LayerBoat's support happens on GitHub.</li>
     </ul>
@@ -159,7 +159,7 @@ ARTICLES['vs-overlord'] = dict(
       <li><b>Open source.</b> Anyone can read the code, fix a bug or adapt it for their studio.</li>
     </ul>
     <h2>Which should you choose?</h2>
-    <p>Pick LayerBoat if your work lives in Figma, Illustrator and After Effects and you'd rather not pay for a licence. Pick Overlord if Photoshop is part of your process, or if you lean on Figma components and want them as Essential Graphics.</p>
+    <p>Pick LayerBoat if your work lives in Figma, Illustrator, Photoshop and After Effects and you'd rather not pay for a licence. Pick Overlord if you rely on Photoshop adjustment layers and live layer styles, or if you lean on Figma components and want them as Essential Graphics.</p>
     ''' + sources([('Overlord by Battle Axe', 'https://battleaxe.co/overlord')]),
   rows=[('Price', 'Free', '$75 per user, one time', 'us'),
         ('Updates', 'Every update, free', 'One year included, then optional renewal', 'us'),
@@ -173,10 +173,11 @@ ARTICLES['vs-overlord'] = dict(
         ('Mac and Windows', 'Yes', 'Yes', 'tie'),
         ('Works offline', 'Yes', 'Yes, after setup', 'tie'),
         ('Figma components as Essential Graphics', 'No', 'Yes', 'them'),
-        ('Photoshop', 'No', 'Yes, including adjustment layers and layer styles', 'them')],
+        ('Photoshop → After Effects', 'Yes, with editable text and shapes', 'Yes, with editable text', 'tie'),
+        ('Photoshop adjustment layers and live layer styles', 'No. Styles are drawn into images', 'Yes', 'them')],
   them='Overlord',
-  faq=[('Is there a free alternative to Overlord?', 'Yes. LayerBoat is free and open source, and moves layers between Figma, Illustrator and After Effects in every direction. It doesn\'t cover Photoshop.'),
-       ('Does LayerBoat work with Photoshop?', 'No. If you need Photoshop layers in After Effects, Overlord does that.'),
+  faq=[('Is there a free alternative to Overlord?', 'Yes. LayerBoat is free and open source, and moves layers between Figma, Illustrator and After Effects in every direction. It also sends Photoshop documents to After Effects.'),
+       ('Does LayerBoat work with Photoshop?', 'Yes. It sends a Photoshop document to After Effects with text still editable and plain shapes as shape layers. Other layers arrive as images with their layer styles drawn in. Adjustment layers are left out, so if you rely on them, Overlord handles them.'),
        ('Can I use both?', 'Yes. They install separately and don\'t get in each other\'s way.')])
 
 # ---------- UXLink ----------
@@ -329,7 +330,7 @@ def build():
             ('Open source', [('Yes', 'w'), ('No', 'l'), ('No', 'l'), ('Yes', 'w'), ('No', 'l')]),
             ('Maintained', [('Yes', 'w'), ('Yes', 'w'), ('Yes', 'w'), ('No', 'l'), ('Yes', 'w')]),
             ('Animation carried across', [('No', 'l'), ('No', 'l'), ('Yes', 'w'), ('No', 'l'), ('No', 'l')]),
-            ('Photoshop', [('No', 'l'), ('Yes', 'w'), ('No', 'l'), ('No', 'l'), ('No', 'l')])]
+            ('Photoshop → After Effects', [('Yes', 'w'), ('Yes', 'w'), ('No', 'l'), ('No', 'l'), ('No', 'l')])]
     def c(cell):
         v, k = cell
         return '<td class="%s">%s</td>' % ({'w': 'cw', 'l': 'cl', 'n': ''}[k], v)
@@ -346,7 +347,7 @@ def build():
     <div class="wide">''' + hub + '''</div>
     <h2>The tools</h2>
     <h3><a href="/layerboat/vs-overlord">Overlord</a> · $75 one time</h3>
-    <p>The best-known option, from Battle Axe. It covers Figma, Illustrator, Photoshop and After Effects, and can bring Figma components in as Essential Graphics. Best if Photoshop is part of your work.</p>
+    <p>The best-known option, from Battle Axe. It covers Figma, Illustrator, Photoshop and After Effects, and can bring Figma components in as Essential Graphics. Best if you rely on Photoshop adjustment layers and live layer styles.</p>
     <h3><a href="/layerboat/vs-uxlink">UXLink</a> · $34.99</h3>
     <p>A newer tool on aescripts + aeplugins that moves designs and animation between Figma and After Effects in both directions. Best if you animate in Figma and want those keyframes in After Effects.</p>
     <h3><a href="/layerboat/vs-aeux">AEUX</a> · Free</h3>
@@ -357,7 +358,7 @@ def build():
     <p>Free and open source. It moves layers between Figma, Illustrator and After Effects in every direction, and keeps your keyframes when you send an updated design again. Best if you want all three apps connected without paying.</p>
     <h2>How to pick</h2>
     <ul>
-      <li>Need Photoshop? <b>Overlord</b>.</li>
+      <li>Need Photoshop with adjustment layers and live layer styles? <b>Overlord</b>. For text, shapes and images from Photoshop, <b>LayerBoat</b> does it free.</li>
       <li>Animating in Figma first? <b>UXLink</b>.</li>
       <li>Converting to lots of formats? <b>Convertify</b>.</li>
       <li>Figma, Illustrator and After Effects, for free? <b>LayerBoat</b>.</li>
@@ -365,7 +366,7 @@ def build():
     ''' + sources([('Overlord by Battle Axe', 'https://battleaxe.co/overlord'), ('UXLink on aescripts + aeplugins', 'https://aescripts.com/uxlink/'), ('AEUX on GitHub', 'https://github.com/google/AEUX'), ('Battle Axe graveyard', 'https://battleaxe.co/graveyard'), ('Convertify by Hypermatic', 'https://www.hypermatic.com/convertify')])
     faq = [('What is the best free Figma to After Effects plugin?', 'LayerBoat is free, open source and maintained, and works in every direction between Figma, Illustrator and After Effects. AEUX is also free but no longer maintained.'),
            ('Can I get Figma animation into After Effects?', 'UXLink carries keyframes and easing between Figma and After Effects. The other tools here move the design so you animate it in After Effects.'),
-           ('Which tool supports Photoshop?', 'Overlord is the only one here that brings Photoshop layers into After Effects.')]
+           ('Which tool supports Photoshop?', 'Overlord and LayerBoat both send Photoshop layers to After Effects. Overlord also carries adjustment layers and live layer styles. LayerBoat is free.')]
     open(os.path.join(SITE, 'compare.html'), 'w', encoding='utf-8').write(page('compare', 'Figma to After Effects plugins compared: Overlord, UXLink, AEUX, Convertify and LayerBoat', 'A plain comparison of every way to get Figma designs into After Effects: price, directions, Illustrator, Photoshop, animation and whether each tool is still maintained.', body, faq))
 
 if __name__ == '__main__':

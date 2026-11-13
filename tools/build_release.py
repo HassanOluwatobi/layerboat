@@ -25,7 +25,7 @@ relay_start = (
     "  try { return l.execute(); } catch (e) { return false; }\n"
     "}\n")
 # The three actions, each giving back a message for the person, or '' when all went well
-actions = (
+ae_link = (
     "function bridgeAETarget() {\n"
     "  if (typeof BridgeTalk === 'undefined') return null;\n"
     "  try { if (BridgeTalk.isRunning('aftereffects')) return 'aftereffects'; } catch (e0) {}\n"
@@ -45,7 +45,8 @@ actions = (
     "    bt.body = \"$.evalFile(new File(Folder.userData.fsName + '/LayerBoat/layerboat-core.jsx')); LayerBoatCore.buildInbox();\";\n"
     "    bt.send();\n"
     "  } catch (e) {}\n"
-    "}\n"
+    "}\n")
+actions = ae_link + (
     "function bridgeSendToAE() {\n"
     "  var r = LayerBoatAI_export({ post: true });\n"
     "  if (String(r).indexOf('ERR') === 0) return String(r).substring(4);\n"
@@ -99,6 +100,28 @@ open(os.path.join(out, 'Illustrator', 'LayerBoat Panel.jsx'), 'w', encoding='utf
 open(os.path.join(out, 'Illustrator', 'LayerBoat actions.jsx'), 'w', encoding='utf-8').write(
     '// LayerBoat for Illustrator: the actions the LayerBoat panel runs. Open the panel, not this file.\n' + common)
 open(os.path.join(out, 'LayerBoat.jsx'), 'w', encoding='utf-8').write(panel)
+# Photoshop: one script, in File > Scripts, that sends the open document to After Effects
+os.makedirs(os.path.join(out, 'Photoshop'))
+ps_src = open(os.path.join(root, 'photoshop', 'photoshop-export.jsx'), encoding='utf-8').read()
+ps_send = (
+    "function bridgePSSendToAE() {\n"
+    "  if (!bridgeAETarget()) return 'Open After Effects first, then send again.';\n"
+    "  var r = LayerBoatPS_export({ post: true });\n"
+    "  if (String(r).indexOf('ERR') === 0) return String(r).substring(4);\n"
+    "  // the LayerBoat panel picks the artwork up within a second. When it is closed,\n"
+    "  // After Effects is asked to build it directly.\n"
+    "  var inbox = new File(Folder.userData.fsName + '/LayerBoat/incoming-ai.json');\n"
+    "  for (var i = 0; i < 6 && inbox.exists; i++) $.sleep(250);\n"
+    "  if (inbox.exists) bridgeAskAE();\n"
+    "  for (var j = 0; j < 60 && inbox.exists; j++) $.sleep(250);\n"
+    "  if (inbox.exists) return 'The artwork is ready, but After Effects has not picked it up. If After Effects is showing its Home screen or a dialog, close it, then send again.';\n"
+    "  return '';\n"
+    "}\n")
+open(os.path.join(out, 'Photoshop', 'Send to After Effects.jsx'), 'w', encoding='utf-8').write(
+    '// LayerBoat for Photoshop: sends the open document to After Effects. Text stays\n'
+    '// editable, shapes stay shapes, and every other layer arrives as an image.\n'
+    '#target photoshop\n' + ps_src + '\n' + ae_link + ps_send +
+    "(function () {\n  var m = bridgePSSendToAE();\n  if (m) alert('LayerBoat: ' + m);\n})();\n")
 os.makedirs(os.path.join(out, 'support'), exist_ok=True)
 open(os.path.join(out, 'support', 'layerboat-core.jsx'), 'w', encoding='utf-8').write('// LayerBoat: the builder After Effects runs when Illustrator sends artwork with the panel closed.\n' + core)
 check = open(os.path.join(rel, 'check-template.jsx'), encoding='utf-8').read().replace('/*@@CORE@@*/', core)

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LayerBoat · Move layers between Figma, Illustrator and After Effects</title>
-<meta name="description" content="Free and open source. Send Figma frames to After Effects as shape layers and editable text, and send them back. Works with Illustrator too.">
+<title>LayerBoat · Move layers between Figma, Illustrator, Photoshop and After Effects</title>
+<meta name="description" content="Free and open source. Send Figma frames to After Effects as shape layers and editable text, and send them back. Works with Illustrator and Photoshop too.">
 <meta property="og:title" content="LayerBoat">
 <meta property="og:description" content="Move layers between Figma, Illustrator and After Effects, both ways. Free and open source.">
 <meta property="og:image" content="https://tobihassan.com/layerboat/cover.jpg">
@@ -82,6 +82,8 @@
   ol.steps li .app img { width:16px; height:16px; border-radius:4px; }
   ol.steps li b { display:block; font-size:15.5px; margin-bottom:4px; }
   ol.steps li span { color:var(--soft); font-size:14px; display:block; }
+  .note-ps { display:flex; align-items:center; gap:10px; margin-top:12px; color:var(--soft); font-size:14px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 18px; }
+  .note-ps img { width:20px; height:20px; border-radius:5px; flex:none; }
   .warn { margin-top:14px; font-size:14px; color:var(--soft); background:#fff8e6; border:1px solid #f3e2b3; border-radius:12px; padding:12px 16px; }
   code { font:12.5px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--chip); padding:1px 5px; border-radius:5px; overflow-wrap:anywhere; }
   kbd { font:500 13.5px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; color:var(--ink); background:var(--chip); padding:1px 6px; border-radius:5px; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
@@ -184,16 +186,16 @@
 
   <div class="hero">
     <div class="apps" aria-hidden="true">
-      <img src="/layerboat/figma.png" alt=""><span>⇄</span><img src="/layerboat/after-effects.png" alt=""><span>⇄</span><img src="/layerboat/illustrator.png" alt="">
+      <img src="/layerboat/photoshop.png" alt=""><span>→</span><img src="/layerboat/after-effects.png" alt=""><span>⇄</span><img src="/layerboat/figma.png" alt=""><span>⇄</span><img src="/layerboat/illustrator.png" alt="">
     </div>
     <h1>Move your designs between Figma, Illustrator and After Effects.</h1>
-    <p class="sub">Send a Figma frame to After Effects and start animating the real layers. When you're done, send it back. It's free, and the code is open for anyone.</p>
+    <p class="sub">Send a Figma frame to After Effects and start animating the real layers. When you're done, send it back. Illustrator and Photoshop work too. It's free, and the code is open for anyone.</p>
     <a class="btn" id="dl" onclick="window.va&&window.va('event',{name:'Download'})" href="https://github.com/HassanOluwatobi/layerboat/releases/latest">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>
       <span id="dl-label">Download LayerBoat</span>
     </a>
     <p class="phone-note">LayerBoat runs on a Mac or PC. Open this page there to install it.</p>
-    <p class="meta" id="dl-meta">For Mac and Windows · After Effects, Illustrator and Figma</p>
+    <p class="meta" id="dl-meta">For Mac and Windows · After Effects, Illustrator, Photoshop and Figma</p>
   </div>
 
   <section id="features">
@@ -281,6 +283,7 @@
     </div>
 
     <div class="chips">
+      <span class="chip">Photoshop documents straight into After Effects</span>
       <span class="chip">Send several frames at once</span>
       <span class="chip">Photoshop layers in a comp go along as images</span>
       <span class="chip">Turn a group into a precomp in one click</span>
@@ -295,7 +298,7 @@
   <section id="install">
     <div class="sec-head">
       <h2>Set it up once.</h2>
-      <p>Four steps, about five minutes. The installer in step two sets up all three apps for you.</p>
+      <p>A few steps, about five minutes. The installer in step two sets up every app for you.</p>
     </div>
     <ol class="steps">
       <li><b>Download and unzip</b><span>You get a folder called LayerBoat. Keep it until you've finished.</span></li>
@@ -303,6 +306,7 @@
       <li><div class="app"><img src="/layerboat/figma.png" alt="">Figma</div><b>Add the plugin</b><span>Go to <kbd>Plugins › Development › Import plugin from manifest</kbd>. The installer shows you which file to pick.</span></li>
       <li><div class="app"><img src="/layerboat/illustrator.png" alt="">Illustrator</div><b>Open the panel</b><span>Go to <kbd>File › Scripts › Other Script</kbd> and pick <code>LayerBoat Panel.jsx</code> from the folder the installer shows.</span></li>
     </ol>
+    <p class="note-ps"><img src="/layerboat/photoshop.png" alt="">Using Photoshop? Restart it once after installing. LayerBoat is then in <kbd>File › Scripts › LayerBoat - Send to After Effects</kbd>.</p>
     <p class="warn">In After Effects, use Run Script File. The option just below it, Install ScriptUI Panel, is a different one and won't set LayerBoat up.</p>
   </section>
 
@@ -326,7 +330,7 @@
       <h2>How it compares.</h2>
       <p>The other ways to get your designs into After Effects, side by side. Each one has a full write-up.</p>
     </div>
-    <div class="cmp-wrap"><table class="cmp multi"><thead><tr><th></th><th class="us">LayerBoat</th><th>Overlord</th><th>UXLink</th><th>AEUX</th><th>Convertify</th></tr></thead><tbody><tr><td>Price</td><td class="cw">Free</td><td class="cl">$75 one time</td><td class="cl">$34.99</td><td class="cw">Free</td><td class="cl">$49/month or $499/year</td></tr><tr><td>Licence</td><td class="cw">Open source (MIT)</td><td class="cl">Licence key, 2 machines</td><td class="cl">Paid licence</td><td class="cw">Open source</td><td class="cl">Subscription per user</td></tr><tr><td>Updates</td><td class="cw">Free, always</td><td class="cl">1 year, then optional renewal</td><td class="">Not stated</td><td class="cl">None, no longer maintained</td><td class="cl">While subscribed</td></tr><tr><td>Account or sign-in</td><td class="cw">None</td><td class="cl">Online unlock at setup</td><td class="cl">Licence key</td><td class="cw">None</td><td class="cl">Pro licence key</td></tr><tr><td>Figma → After Effects</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">Through Adobe XD</td></tr><tr><td>After Effects → Figma</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">No</td><td class="cl">No</td></tr><tr><td>Illustrator ↔ After Effects</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">Separate tool (PathLink)</td><td class="cl">No</td><td class="cl">No</td></tr><tr><td>Figma ↔ Illustrator</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">Separate tool (Fig2Ai)</td><td class="cl">No</td><td class="cl">Illustrator → Figma only</td></tr><tr><td>Editable text</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="">Not stated</td></tr><tr><td>Open source</td><td class="cw">Yes</td><td class="cl">No</td><td class="cl">No</td><td class="cw">Yes</td><td class="cl">No</td></tr><tr><td>Maintained</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">No</td><td class="cw">Yes</td></tr><tr><td>Animation carried across</td><td class="cl">No</td><td class="cl">No</td><td class="cw">Yes</td><td class="cl">No</td><td class="cl">No</td></tr><tr><td>Photoshop</td><td class="cl">No</td><td class="cw">Yes</td><td class="cl">No</td><td class="cl">No</td><td class="cl">No</td></tr></tbody></table></div>
+    <div class="cmp-wrap"><table class="cmp multi"><thead><tr><th></th><th class="us">LayerBoat</th><th>Overlord</th><th>UXLink</th><th>AEUX</th><th>Convertify</th></tr></thead><tbody><tr><td>Price</td><td class="cw">Free</td><td class="cl">$75 one time</td><td class="cl">$34.99</td><td class="cw">Free</td><td class="cl">$49/month or $499/year</td></tr><tr><td>Licence</td><td class="cw">Open source (MIT)</td><td class="cl">Licence key, 2 machines</td><td class="cl">Paid licence</td><td class="cw">Open source</td><td class="cl">Subscription per user</td></tr><tr><td>Updates</td><td class="cw">Free, always</td><td class="cl">1 year, then optional renewal</td><td class="">Not stated</td><td class="cl">None, no longer maintained</td><td class="cl">While subscribed</td></tr><tr><td>Account or sign-in</td><td class="cw">None</td><td class="cl">Online unlock at setup</td><td class="cl">Licence key</td><td class="cw">None</td><td class="cl">Pro licence key</td></tr><tr><td>Figma → After Effects</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">Through Adobe XD</td></tr><tr><td>After Effects → Figma</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">No</td><td class="cl">No</td></tr><tr><td>Illustrator ↔ After Effects</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">Separate tool (PathLink)</td><td class="cl">No</td><td class="cl">No</td></tr><tr><td>Figma ↔ Illustrator</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">Separate tool (Fig2Ai)</td><td class="cl">No</td><td class="cl">Illustrator → Figma only</td></tr><tr><td>Editable text</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="">Not stated</td></tr><tr><td>Open source</td><td class="cw">Yes</td><td class="cl">No</td><td class="cl">No</td><td class="cw">Yes</td><td class="cl">No</td></tr><tr><td>Maintained</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">No</td><td class="cw">Yes</td></tr><tr><td>Animation carried across</td><td class="cl">No</td><td class="cl">No</td><td class="cw">Yes</td><td class="cl">No</td><td class="cl">No</td></tr><tr><td>Photoshop → After Effects</td><td class="cw">Yes</td><td class="cw">Yes</td><td class="cl">No</td><td class="cl">No</td><td class="cl">No</td></tr></tbody></table></div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px">
       <a class="chip" style="text-decoration:none;text-align:center" href="/layerboat/vs-overlord">vs Overlord</a>
       <a class="chip" style="text-decoration:none;text-align:center" href="/layerboat/vs-uxlink">vs UXLink</a>
@@ -339,7 +343,7 @@
     <div class="sec-head"><h2>Questions.</h2></div>
     <details><summary>Is it really free?</summary><p>Yes. There's no account, no trial and no paid version. The code is MIT licensed, so anyone can read it, change it or build on it.</p></details>
     <details><summary>Does it upload my designs anywhere?</summary><p>No. Your designs move between apps through a helper running on your own computer. Nothing is sent online.</p></details>
-    <details><summary>Which versions does it work with?</summary><p>Recent versions of After Effects and Illustrator, and the Figma desktop app. Text with mixed styles in one box needs After Effects 2024.3 or newer.</p></details>
+    <details><summary>Which versions does it work with?</summary><p>Recent versions of After Effects, Illustrator and Photoshop, and the Figma desktop app. Text with mixed styles in one box needs After Effects 2024.3 or newer.</p></details>
     <details><summary>Does it work on Windows?</summary><p>Yes. LayerBoat works on Mac and Windows.</p></details>
     <details><summary>Nothing arrives in After Effects. What do I check?</summary><p>Make sure Receive live from Figma is ticked in the panel, and that <kbd>Settings › Scripting &amp; Expressions › Allow Scripts to Write Files and Access Network</kbd> is on. You can also click Copy instead in the Figma plugin, then Paste from Figma in After Effects.</p></details>
     <details><summary>How do I remove it?</summary><p>Run <code>Uninstall LayerBoat.jsx</code> from the download the same way you ran the installer. Then remove the plugin in Figma under <kbd>Plugins › Development › Manage plugins in development</kbd>.</p></details>
@@ -361,7 +365,8 @@
   var apps = {
     figma: { name: 'Figma', icon: '/layerboat/figma.png' },
     ae: { name: 'After Effects', icon: '/layerboat/after-effects.png' },
-    ai: { name: 'Illustrator', icon: '/layerboat/illustrator.png' }
+    ai: { name: 'Illustrator', icon: '/layerboat/illustrator.png' },
+    ps: { name: 'Photoshop', icon: '/layerboat/photoshop.png' }
   };
   var routes = {
     'figma>ae': { steps: [['ae', 'In the LayerBoat panel, tick <b>Receive live from Figma</b>.'], ['figma', 'Select a frame and open the LayerBoat plugin.'], ['figma', 'Click <b>Send to After Effects</b>. The frame opens as a new comp.']],
@@ -371,6 +376,8 @@
       tip: 'Prefer to start from Illustrator? Tick Receive live in After Effects, then click <b>Send to After Effects</b> in Illustrator’s LayerBoat panel.' },
     'ae>ai': { steps: [['ai', 'Have Illustrator open.'], ['ae', 'Open your comp. Select layers if you only want those.'], ['ae', 'Click <b>Send comp to Illustrator</b>. It lands on a new artboard.']], tip: '' },
     'figma>ai': { steps: [['figma', 'Select a frame and click <b>Send to Illustrator</b> in the plugin.'], ['ai', 'In the LayerBoat panel, click <b>Bring in from Figma</b>.'], ['ai', 'The frame lands on a new artboard, or in a new document if none is open.']], tip: 'Select several frames to send them all at once. Each one gets its own artboard.' },
+    'ps>ae': { steps: [['ae', 'Have After Effects open. The LayerBoat panel can stay closed.'], ['ps', 'Open your document. Hide any layers you want to leave out.'], ['ps', 'Choose <b>File › Scripts › LayerBoat - Send to After Effects</b>. It opens as a new comp.']],
+      tip: 'Text stays editable and plain shapes stay shapes. Other layers arrive as images with their layer styles drawn in. Each artboard becomes its own comp.' },
     'ai>figma': { steps: [['figma', 'Open the LayerBoat plugin and leave it open.'], ['ai', 'Select your artwork, or nothing for the whole artboard.'], ['ai', 'In the LayerBoat panel, click <b>Send to Figma</b>.']], tip: '' }
   };
   var from = 'figma', to = 'ae';
@@ -384,9 +391,12 @@
       b.setAttribute('aria-label', apps[k].name);
       var on = which === 'from' ? k === from : k === to;
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      if (which === 'to' && k === from) b.disabled = true;
+      if (which === 'to' && !routes[from + '>' + k]) b.disabled = true;
       b.onclick = function () {
-        if (which === 'from') { from = k; if (to === from) to = k === 'ae' ? 'figma' : 'ae'; }
+        if (which === 'from') {
+          from = k;
+          if (!routes[from + '>' + to]) to = Object.keys(apps).filter(function (t) { return routes[from + '>' + t]; })[0];
+        }
         else to = k;
         render();
       };
@@ -415,7 +425,7 @@ fetch('https://api.github.com/repos/HassanOluwatobi/layerboat/releases/latest')
     document.getElementById('dl').href = zip.browser_download_url;
     var d2 = document.getElementById('dl2'); if (d2) { d2.href = zip.browser_download_url; d2.textContent = 'Download ' + rel.name; }
     document.getElementById('dl-label').textContent = 'Download ' + rel.name;
-    document.getElementById('dl-meta').textContent = (zip.size / 1048576).toFixed(1) + ' MB · Mac and Windows · After Effects, Illustrator and Figma';
+    document.getElementById('dl-meta').textContent = (zip.size / 1048576).toFixed(1) + ' MB · Mac and Windows · After Effects, Illustrator, Photoshop and Figma';
   })
   .catch(function () {});
 </script>

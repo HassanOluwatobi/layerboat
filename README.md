@@ -1,12 +1,12 @@
 <p align="center"><img src="brand/logo-lockup.svg" alt="LayerBoat" width="420"></p>
 
-<p align="center">Move layers between Figma, Illustrator and After Effects. Both ways.<br>Real shapes, live text, nothing flattened. Free and open source.</p>
+<p align="center">Move layers between Figma, Illustrator and After Effects, both ways, and from Photoshop to After Effects.<br>Real shapes, live text, nothing flattened. Free and open source.</p>
 
 ---
 
 ## What it does
 
-LayerBoat sends your designs between three apps as native, editable layers.
+LayerBoat sends your designs between four apps as native, editable layers.
 
 | From | To | What comes across |
 | --- | --- | --- |
@@ -16,6 +16,7 @@ LayerBoat sends your designs between three apps as native, editable layers.
 | After Effects | Illustrator | A comp lands on a new artboard. Text stays live, paragraph text keeps its box, layer names stay. |
 | Illustrator | Figma | Artwork becomes a Figma frame with groups, masks and layer names. |
 | Figma | Illustrator | A frame lands on a new artboard with live text and embedded images. |
+| Photoshop | After Effects | The open document becomes a comp. Text stays editable, plain shapes become shape layers, groups stay groups and other layers arrive as images with their layer styles drawn in. Each artboard becomes its own comp. |
 
 Send the same frame or artboard again and LayerBoat updates the comp it made before. Your keyframes, effects and the layers you added yourself all stay.
 
@@ -25,6 +26,7 @@ Send the same frame or artboard again and LayerBoat updates the comp it made bef
 2. In After Effects, choose **File > Scripts > Run Script File** and pick `Install LayerBoat.jsx`. Use Run Script File. The option called Install ScriptUI Panel is a different one and won't work. The LayerBoat panel opens straight away. Later you find it at **Window > LayerBoat.jsx**.
 3. In Figma, install the LayerBoat plugin. Until it is in the Figma Community, use **Plugins > Development > Import plugin from manifest** and pick the file the installer shows you.
 4. In Illustrator, choose **File > Scripts > Other Script** and pick `LayerBoat Panel.jsx` in the folder the installer made.
+5. In Photoshop, restart it once. Then choose **File > Scripts > LayerBoat - Send to After Effects**.
 
 If After Effects says scripts are not allowed to write files, turn on **Settings > Scripting & Expressions > Allow Scripts to Write Files and Access Network** and run the installer again.
 
@@ -45,6 +47,7 @@ Windows has passed an automated install and connection test, but has not been tr
 - Gradients you make by hand in After Effects arrive grey in Figma and Illustrator, because After Effects scripts cannot read gradient colours. Gradients LayerBoat made keep their colours.
 - Animation is not sent between apps. Figma and Illustrator get the first frame.
 - In Illustrator, the panel floats and is opened through **Other Script**. Illustrator scripts cannot dock a panel.
+- From Photoshop, adjustment layers are left out, and layer styles, masks and clipping masks are drawn into images instead of staying live.
 - After a long After Effects session, gradient colours can stop applying. Restarting After Effects fixes it.
 
 ---
@@ -64,6 +67,7 @@ After Effects panel  <--BridgeTalk-->  Illustrator
 | --- | --- |
 | `after-effects/layerboat-core.jsx` | The engine. Builds After Effects layers from a description of the design, and describes comps for Figma and Illustrator. ExtendScript (ES3). |
 | `after-effects/illustrator-export.jsx` | Runs inside Illustrator. Describes artwork for After Effects and Figma. |
+| `photoshop/photoshop-export.jsx` | Runs inside Photoshop. Describes the open document for After Effects. |
 | `after-effects/illustrator-import.jsx` | Runs inside Illustrator. Brings in SVG from Figma and After Effects, then rebuilds text as real Illustrator text. |
 | `figma-plugin/` | The Figma plugin. `code.js` reads and builds Figma layers. `ui.html` talks to the helper. |
 | `relay/` | The helper, written in Go. Passes designs between the apps. Only the Figma plugin may read from it in a browser. |
@@ -95,4 +99,4 @@ Bug reports with a small example file help the most. See [CONTRIBUTING.md](CONTR
 
 ## License
 
-[MIT](LICENSE). Figma, Adobe Illustrator and Adobe After Effects are trademarks of their owners. LayerBoat is not made by or affiliated with Figma or Adobe.
+[MIT](LICENSE). Figma, Adobe Illustrator, Adobe Photoshop and Adobe After Effects are trademarks of their owners. LayerBoat is not made by or affiliated with Figma or Adobe.
