@@ -1,6 +1,6 @@
 <p align="center"><img src="brand/logo-lockup.svg" alt="LayerBoat" width="420"></p>
 
-<p align="center">Move layers between Figma, Illustrator and After Effects, both ways, and from Photoshop to After Effects.<br>Real shapes, live text, nothing flattened. Free and open source.</p>
+<p align="center">Move your Figma, Illustrator and Photoshop designs into After Effects without rebuilding a single layer.<br>Text stays editable, gradients stay gradients, and Figma and Illustrator trade layers both ways. Free and open source.</p>
 
 ---
 

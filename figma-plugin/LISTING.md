@@ -6,21 +6,23 @@ Everything Figma asks for when you publish, ready to paste.
 LayerBoat
 
 ## Tagline
-Move layers between Figma, Illustrator and After Effects. Both ways.
+Move layers between Figma, Illustrator and After Effects, both ways, still editable.
 
 ## Category
 Design tools
 
 ## Description
-LayerBoat moves your designs between Figma, Adobe Illustrator and Adobe After Effects as real, editable layers. It is free and open source.
+LayerBoat moves your designs between Figma, Adobe Illustrator and Adobe After Effects without rebuilding a single layer. Text stays editable, gradients stay gradients, and everything lands where you placed it. It is free and open source.
+
+It replaces the usual detours. No exporting SVGs, no cleaning them up in Illustrator, no going through Adobe XD. When you paste from Illustrator, Figma often gets a flat image or outlined text. LayerBoat brings the artwork in as shapes and live text instead.
 
 What it does
-- Send a frame or a selection from Figma to After Effects. Shapes, text, gradients, images, masks and groups come in as native After Effects layers, ready to animate.
+- Send a frame or a selection from Figma to After Effects. Shapes, text, gradients, images, masks and groups come in as native After Effects layers, named as they were in Figma.
 - Send a comp from After Effects back to Figma.
-- Send artwork from Illustrator to Figma, and Figma frames to Illustrator, with text kept live and layer names kept.
+- Send artwork from Illustrator to Figma, and Figma frames to Illustrator. Text stays live, gradients stay editable and layer names are kept.
 - Figma components come in as shared After Effects comps. Each copy keeps its own text as an Essential Graphics control.
 - Select several frames to send them all at once. Each one becomes its own comp.
-- Send the same frame again and the comp updates in place. Your keyframes and effects stay.
+- Change the design after you have animated it. Send the frame again and the comp updates in place, with your keyframes and effects kept.
 
 How to use it
 1. Download LayerBoat from tobihassan.com/layerboat and run Install LayerBoat.jsx in After Effects with File > Scripts > Run Script File.
