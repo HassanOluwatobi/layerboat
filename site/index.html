@@ -14,12 +14,15 @@
 <link rel="icon" href="/layerboat/icon.svg" type="image/svg+xml">
 <link rel="icon" href="/layerboat/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/layerboat/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="/layerboat/sky.jpg">
 <style>
-  :root { --ink:#232326; --soft:#5f5f67; --faint:#8b8b93; --line:#ebebeb; --bg:#fcfcfc; --card:#ffffff; --chip:#f2f2f2;
+  :root { --ink:#161c28; --accent:#0b6bf0; --accent2:#0958cc; --soft:#5f5f67; --faint:#8b8b93; --line:#ebebeb; --bg:#fbfbf9; --card:#ffffff; --chip:#f2f2f2;
           --ae:#9999ff; --aebg:#1b1b2b; --ui:#232325; --ui2:#2c2c2f; --uiline:#3a3a3e; --uitext:#d6d6da; --uifaint:#8d8d95; }
   * { box-sizing:border-box; margin:0; padding:0; }
   html { scroll-behavior:smooth; }
-  body { font:16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  body { font:16px/1.6 "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
   a { color:inherit; }
   .wrap { max-width:1000px; margin:0 auto; padding:0 24px; }
   header { display:flex; justify-content:space-between; align-items:center; padding:24px 0; }
@@ -27,10 +30,10 @@
   header nav a { font-size:14px; color:var(--soft); text-decoration:none; margin-left:22px; }
   header nav a:hover { color:var(--ink); }
   .hero { text-align:center; padding:60px 0 76px; }
-  .apps { display:flex; justify-content:center; align-items:center; gap:16px; margin-bottom:36px; }
+  .apps { display:flex; justify-content:center; align-items:center; gap:16px; margin-bottom:28px; }
   .apps img { width:68px; height:68px; border-radius:17px; box-shadow:0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.08); }
   .apps span { color:#bdbdbd; font-size:20px; }
-  h1, .serif { font-family:"Geist Serif", "Iowan Old Style", Georgia, serif; font-weight:400; letter-spacing:-.02em; }
+  .serif, h1 i, h2 i { font-family:"Instrument Serif", "Iowan Old Style", Georgia, serif; font-weight:400; font-style:italic; letter-spacing:-.01em; }
   h1 { font-size:clamp(34px, 5.6vw, 56px); line-height:1.08; max-width:760px; margin:0 auto; }
   .sub { color:var(--soft); font-size:18px; max-width:560px; margin:20px auto 32px; }
   .btn { display:inline-flex; align-items:center; gap:10px; background:var(--ink); color:#fff; text-decoration:none; font-weight:600; font-size:16px; padding:15px 26px; border-radius:12px; transition:transform .15s cubic-bezier(.32,.72,0,1), box-shadow .15s; box-shadow:0 1px 2px rgba(0,0,0,.2), 0 6px 18px rgba(35,35,38,.18); }
@@ -44,7 +47,8 @@
   .demo p { text-align:center; font-size:14px; color:var(--faint); margin-top:16px; }
   @media (max-width:600px) { .demo { margin-bottom:64px; } .demo video { border-radius:12px; } }
   .sec-head { max-width:620px; margin-bottom:40px; }
-  .sec-head h2 { font-family:"Geist Serif", "Iowan Old Style", Georgia, serif; font-weight:400; font-size:38px; line-height:1.12; letter-spacing:-.015em; margin-bottom:12px; }
+  .sec-head h2 { font-weight:600; font-size:clamp(30px,4.2vw,46px); line-height:1.08; letter-spacing:-.03em; margin-bottom:14px; text-wrap:balance; }
+  .sec-head h2 i { font-size:1.08em; }
   .sec-head p { color:var(--soft); font-size:17px; }
 
   /* features */
@@ -148,6 +152,64 @@
     footer { flex-direction:column; }
   }
   @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .btn, summary::after, .seg button { transition:none; } .fade { animation:none; } }
+
+  /* ---------- sky hero ---------- */
+  .sky { position:relative; height:clamp(820px, 108svh, 1060px); overflow:hidden; container-type:size; color:#fff; isolation:isolate; }
+  .scene { position:absolute; left:50%; top:50%; width:max(100cqw, 177.78cqh); aspect-ratio:16/9; transform:translate(-50%,-50%); z-index:-2; }
+  .scene img.bg { width:100%; height:100%; display:block; animation:breathe 40s ease-in-out infinite alternate; transform-origin:73% 62%; }
+  @keyframes breathe { from { transform:scale(1); } to { transform:scale(1.05); } }
+  .boat { position:absolute; left:81%; top:61.6%; width:4.2%; transform-origin:50% 90%; animation:bob 5.5s ease-in-out infinite; filter:drop-shadow(0 2px 6px rgba(40,60,140,.35)); }
+  @keyframes bob { 0%,100% { transform:translateY(0) rotate(-2deg); } 50% { transform:translateY(-6%) rotate(2.5deg); } }
+  .sky::after { content:""; position:absolute; inset:auto 0 0 0; height:34%; background:linear-gradient(180deg, rgba(251,251,249,0), var(--bg)); z-index:-1; }
+  .topbar { position:fixed; inset:0 0 auto 0; z-index:50; transition:background .35s, box-shadow .35s, backdrop-filter .35s; }
+  .topbar header { padding:18px 0; }
+  .topbar .logo-dark { display:none; }
+  .topbar nav a { color:rgba(255,255,255,.88); transition:color .2s; }
+  .topbar nav a:hover { color:#fff; }
+  .topbar.solid { background:rgba(251,251,249,.82); backdrop-filter:blur(16px) saturate(1.4); -webkit-backdrop-filter:blur(16px) saturate(1.4); box-shadow:0 1px 0 rgba(22,28,40,.07); }
+  .topbar.solid .logo-dark { display:block; } .topbar.solid .logo-light { display:none; }
+  .topbar.solid nav a { color:var(--soft); } .topbar.solid nav a:hover { color:var(--ink); }
+  .hero { position:relative; text-align:center; padding:calc(92px + 4cqh) 0 0; }
+  .apps img { box-shadow:0 0 0 1px rgba(255,255,255,.5), 0 10px 30px rgba(20,40,120,.25); }
+  .apps span { color:rgba(255,255,255,.75); }
+  h1 { font-family:"Instrument Serif", Georgia, serif; font-style:italic; font-weight:400; font-size:clamp(40px, 5.8vw, 80px); line-height:1.0; letter-spacing:-.02em; max-width:1040px; margin:0 auto; text-shadow:0 2px 30px rgba(20,40,130,.28); }
+  h1 b { font-family:"Instrument Sans", sans-serif; font-style:normal; font-weight:600; letter-spacing:-.045em; font-size:.94em; }
+  .glass { max-width:600px; margin:30px auto 0; padding:22px 26px 20px; border-radius:22px; background:rgba(255,255,255,.24); border:1px solid rgba(255,255,255,.5); backdrop-filter:blur(18px) saturate(1.35); -webkit-backdrop-filter:blur(18px) saturate(1.35); box-shadow:0 20px 50px rgba(30,50,140,.18); color:#18213a; }
+  .glass .sub { color:#1c2744; font-size:16.5px; margin:0 auto 18px; max-width:none; }
+  .glass .meta { color:#2b3656; opacity:.75; margin-top:12px; }
+  .btn { background:var(--accent); box-shadow:0 1px 2px rgba(10,40,120,.25), 0 8px 22px rgba(11,107,240,.35); }
+  .btn:hover { background:var(--accent2); box-shadow:0 1px 2px rgba(10,40,120,.25), 0 12px 28px rgba(11,107,240,.42); }
+  .btn.ghost { background:#fff; color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08), 0 6px 16px rgba(20,30,60,.10); }
+  .btn.ghost:hover { background:#fff; }
+  .ctas { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .demo { position:relative; margin:-190px 0 110px; z-index:2; }
+  .demo video { border-radius:20px; aspect-ratio:1600/977; box-shadow:0 2px 4px rgba(10,20,60,.12), 0 40px 90px rgba(20,40,110,.28); background:#1e1e1e; }
+  .blobs { position:relative; }
+  .blobs::before, .blobs::after { content:""; position:absolute; z-index:-1; width:520px; height:420px; border-radius:50%; filter:blur(90px); opacity:.55; pointer-events:none; }
+  .blobs::before { left:-260px; top:120px; background:#bcd3ff; }
+  .blobs::after { right:-240px; top:40%; background:#ffd7b8; }
+  .stage { background:linear-gradient(160deg,#edf3ff 0%,#f6f1ff 50%,#fff2e6 100%); border-color:rgba(22,28,40,.06); }
+  section { border-top:0; }
+  .reveal { opacity:0; transform:translateY(18px); transition:opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+  .reveal.in { opacity:1; transform:none; }
+  /* closing sky */
+  .endsky { position:relative; margin-top:40px; padding:140px 24px 120px; background:url(/layerboat/sky.jpg) 70% 40%/cover; text-align:center; }
+  .endsky::before { content:""; position:absolute; inset:0 0 auto 0; height:45%; background:linear-gradient(var(--bg), rgba(251,251,249,0)); }
+  .endsky .card { position:relative; max-width:640px; margin:0 auto; background:#fff; border-radius:26px; padding:46px 36px 40px; box-shadow:0 30px 80px rgba(20,40,110,.22); }
+  .endsky h2 { font-weight:600; font-size:clamp(28px,4vw,42px); line-height:1.08; letter-spacing:-.03em; margin-bottom:12px; }
+  .endsky p { color:var(--soft); margin-bottom:26px; }
+  @media (max-width:600px) {
+    .sky { height:auto; padding-bottom:150px; container-type:normal; }
+    .scene { inset:0; left:0; top:0; width:auto; aspect-ratio:auto; transform:none; }
+    .scene img.bg { object-fit:cover; object-position:72% 50%; }
+    .boat { display:none; }
+    .hero { padding-top:88px; }
+    .apps { gap:10px; } .apps img { width:46px; height:46px; border-radius:12px; } .apps span { font-size:15px; }
+    .glass { padding:18px 16px; margin-top:24px; }
+    .demo { margin-top:-96px; margin-bottom:70px; }
+    .endsky { padding:90px 16px 80px; }
+  }
+  @media (prefers-reduced-motion:reduce) { .scene img.bg, .boat { animation:none; } .reveal { opacity:1; transform:none; transition:none; } }
 </style>
 <style>
   .cmp { width:100%; border-collapse:separate; border-spacing:0; background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; font-size:15px; }
@@ -182,25 +244,35 @@
 <script>if(/(^|\.)tobihassan\.com$/.test(location.hostname)){window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments)};["/_vercel/insights/script.js","/_vercel/speed-insights/script.js"].forEach(function(s){var e=document.createElement("script");e.defer=1;e.src=s;document.head.appendChild(e)})}</script>
 </head>
 <body>
-<div class="wrap">
+<div class="topbar" id="topbar"><div class="wrap">
   <header>
-    <a href="/layerboat"><img src="/layerboat/logo-lockup.svg" alt="LayerBoat"></a>
+    <a href="/layerboat"><img class="logo-light" src="/layerboat/logo-lockup-white.svg" alt="LayerBoat"><img class="logo-dark" src="/layerboat/logo-lockup.svg" alt="LayerBoat"></a>
     <nav><a href="#features">Features</a><a href="#install">Install</a><a href="#use">How to use</a><a href="/layerboat/compare">Compare</a><a href="#faq">FAQ</a><a href="https://github.com/HassanOluwatobi/layerboat">GitHub</a></nav>
   </header>
-
+</div></div>
+<div class="sky" id="sky">
+  <div class="scene" aria-hidden="true"><img class="bg" src="/layerboat/sky.jpg" alt=""><img class="boat" src="/layerboat/boat-white.svg" alt=""></div>
+<div class="wrap">
   <div class="hero">
     <div class="apps" aria-hidden="true">
       <img src="/layerboat/figma.png" alt=""><span>⇄</span><img src="/layerboat/after-effects.png" alt=""><span>⇄</span><img src="/layerboat/illustrator.png" alt=""><span>+</span><img src="/layerboat/photoshop.png" alt="">
     </div>
-    <h1 style="text-wrap:balance">Move your Figma designs into After Effects without rebuilding a single layer.</h1>
+    <h1 style="text-wrap:balance">Move your <b>Figma designs</b> into <b>After Effects</b> without rebuilding a single layer.</h1>
+    <div class="glass">
     <p class="sub">Text stays editable. Gradients stay gradients. Everything lands where you placed it. When the design changes, update it in place and keep your animation. Illustrator and Photoshop work too. It's free and open source.</p>
-    <a class="btn" id="dl" onclick="window.va&&window.va('event',{name:'Download'})" href="https://github.com/HassanOluwatobi/layerboat/releases/latest">
+    <div class="ctas"><a class="btn" id="dl" onclick="window.va&&window.va('event',{name:'Download'})" href="https://github.com/HassanOluwatobi/layerboat/releases/latest">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>
       <span id="dl-label">Download LayerBoat</span>
     </a>
+    <a class="btn ghost" href="https://github.com/HassanOluwatobi/layerboat">View on GitHub</a>
+    </div>
     <p class="phone-note">LayerBoat runs on a Mac or PC. Open this page there to install it.</p>
     <p class="meta" id="dl-meta">For Mac and Windows · After Effects, Illustrator, Photoshop and Figma</p>
+    </div>
   </div>
+</div>
+</div>
+<div class="wrap">
 
 
   <figure class="demo">
@@ -208,7 +280,7 @@
     <p>Two real Figma files sent to After Effects. Every outline you see is its own editable layer.</p>
   </figure>
 
-  <section id="features">
+  <section id="features" class="blobs">
     <div class="sec-head">
       <h2>Skip the SVG export, the Illustrator cleanup and the XD workaround.</h2>
       <p>Those detours exist because a normal import hands you a flat picture, grey gradients or text turned into outlines. LayerBoat rebuilds your design with each app's own layers, so you pick up where the design left off.</p>
@@ -362,11 +434,15 @@
     <details><summary>I found a bug.</summary><p><a href="https://github.com/HassanOluwatobi/layerboat/issues/new" style="text-decoration:underline">Open an issue on GitHub</a>. Say which apps you used, what you sent and what came out. A screenshot helps a lot.</p></details>
   </section>
 
-  <section class="cta">
-    <h2 class="serif">Try it on the next file you were about to rebuild.</h2>
-    <a class="btn" href="https://github.com/HassanOluwatobi/layerboat/releases/latest" onclick="window.va&&window.va('event',{name:'Download'})" id="dl2">Download LayerBoat</a>
-  </section>
-
+</div>
+<div class="endsky">
+  <div class="card reveal">
+    <h2>Try it on the next file you were <i>about to rebuild.</i></h2>
+    <p>Free, open source and ready in about five minutes.</p>
+    <div class="ctas"><a class="btn" href="https://github.com/HassanOluwatobi/layerboat/releases/latest" onclick="window.va&&window.va('event',{name:'Download'})" id="dl2">Download LayerBoat</a></div>
+  </div>
+</div>
+<div class="wrap">
   <footer>
     <span>Made by <a href="https://x.com/Art_sassin" style="text-decoration:underline">Hassan Oluwatobi</a>. Free and open source under the MIT licence. Not affiliated with Figma or Adobe.</span>
     <a href="https://github.com/HassanOluwatobi/layerboat">github.com/HassanOluwatobi/layerboat</a>
@@ -444,5 +520,12 @@ fetch('https://api.github.com/repos/HassanOluwatobi/layerboat/releases/latest')
 <script>(function(){var v=document.getElementById('demo');if(!v)return;
 if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){v.removeAttribute('autoplay');v.pause();}
 v.addEventListener('click',function(){v.paused?v.play():v.pause();});})();</script>
+<script>(function(){
+var bar=document.getElementById('topbar'),sky=document.getElementById('sky');
+function f(){bar.classList.toggle('solid',window.scrollY>60);}addEventListener('scroll',f,{passive:true});f();
+var els=document.querySelectorAll('.sec-head,.feature,.chips,.steps,.picker,.cmp-wrap,#faq details,.reveal');
+if(!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{rootMargin:'0px 0px -8% 0px'});
+els.forEach(function(e){e.classList.add('reveal');io.observe(e);});})();</script>
 </body>
 </html>
