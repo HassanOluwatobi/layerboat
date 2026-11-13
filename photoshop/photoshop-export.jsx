@@ -1,4 +1,4 @@
-/* global Units, TypeUnits, DialogModes, stringIDToTypeID, charIDToTypeID, typeIDToStringID, ActionReference, executeActionGet, UnitValue, NewDocumentMode, DocumentFill, BlendMode, PNGSaveOptions, Extension, PathKind */
+/* global ActionDescriptor, executeAction, Units, TypeUnits, DialogModes, stringIDToTypeID, charIDToTypeID, typeIDToStringID, ActionReference, executeActionGet, UnitValue, NewDocumentMode, DocumentFill, BlendMode, PNGSaveOptions, Extension, PathKind */
 // LayerBoat for Photoshop: describes the open document the way the Figma plugin
 // describes a frame, so After Effects builds it with the same builder.
 // Text stays editable text, plain shapes stay shapes, groups stay groups and every
@@ -15,7 +15,10 @@ function LayerBoatPS_export(opts) {
   var activeBefore = null;
   try { activeBefore = doc.activeLayer; } catch (eA) {}
   var notes = [];
-  var warnings = {}, scratch = null, scratchState = null, imageCount = 0;
+  // time spent per step, to find what makes a send slow
+  var PT = {};
+  function tick(k, t0) { var t = new Date().getTime(); PT[k] = (PT[k] || 0) + (t - t0); return t; }
+  var warnings = {}, scratch = null, imageCount = 0;
   var OX = 0, OY = 0;
   var F = String.fromCharCode;
 
@@ -30,7 +33,7 @@ function LayerBoatPS_export(opts) {
   var DOC_PATH = '';
   try { DOC_PATH = doc.fullName.fsName; } catch (eP) { DOC_PATH = DOC_NAME; }
   var W = px(doc.width), H = px(doc.height);
-  var imgDir = new Folder(Folder.userData.fsName + '/LayerBoat/Photoshop images');
+  var imgDir = new Folder(opts.imageFolder || (Folder.userData.fsName + '/LayerBoat/Photoshop images'));
 
   // Photoshop's own description of a layer, for what its DOM does not show
   function descOf(L) {
@@ -104,33 +107,60 @@ function LayerBoatPS_export(opts) {
   // ---------- images ----------
   // Layers are copied one at a time into a throwaway document, cropped to their size
   // and saved as PNG, with their layer styles and masks drawn in.
-  function ensureScratch() {
-    if (scratch) return;
-    scratch = app.documents.add(UnitValue(W, 'px'), UnitValue(H, 'px'), doc.resolution, 'LayerBoat', NewDocumentMode.RGB, DocumentFill.TRANSPARENT);
-    scratchState = scratch.activeHistoryState;
-    app.activeDocument = doc;
+  // Photoshop's quick PNG mode, without a colour profile: the fastest way it saves a PNG
+  function savePng(f) {
+    try {
+      var d = new ActionDescriptor(), png = new ActionDescriptor();
+      png.putEnumerated(S('method'), S('PNGMethod'), S('quick'));
+      png.putEnumerated(S('PNGInterlaceType'), S('PNGInterlaceType'), S('PNGInterlaceNone'));
+      png.putEnumerated(S('PNGFilter'), S('PNGFilter'), S('PNGFilterNone'));
+      png.putInteger(S('compression'), 1);
+      d.putObject(S('as'), S('PNGFormat'), png);
+      d.putPath(S('in'), f);
+      d.putBoolean(S('copy'), true);
+      d.putBoolean(S('lowerCase'), true);
+      d.putBoolean(S('embedProfiles'), false);
+      executeAction(S('save'), d, DialogModes.NO);
+      if (f.exists) return;
+    } catch (e) {}
+    scratch.saveAs(f, new PNGSaveOptions(), true, Extension.LOWERCASE);
   }
   function rasterOf(stack, name, keepLook) {
     var b = boundsOf(stack[0]);
     // the image stops at the edges of the canvas, as Photoshop shows it
     var cb = [Math.max(0, Math.floor(b[0])), Math.max(0, Math.floor(b[1])), Math.min(W, Math.ceil(b[2])), Math.min(H, Math.ceil(b[3]))];
     if (cb[2] - cb[0] < 1 || cb[3] - cb[1] < 1) return null;
-    ensureScratch();
+    var t0 = new Date().getTime();
+    // a document just the size of the image, so nothing needs cropping
+    scratch = app.documents.add(UnitValue(cb[2] - cb[0], 'px'), UnitValue(cb[3] - cb[1], 'px'), doc.resolution, 'LayerBoat', NewDocumentMode.RGB, DocumentFill.TRANSPARENT);
+    t0 = tick('new', t0);
     app.activeDocument = doc;
     for (var i = 0; i < stack.length; i++) stack[i].duplicate(scratch, ElementPlacement.PLACEATBEGINNING);
+    t0 = tick('duplicate', t0);
     app.activeDocument = scratch;
+    // Photoshop does not keep a copy's place when the document is smaller, so each copy
+    // is moved from wherever it landed to its own spot in the image
+    for (var k = 0; k < stack.length; k++) {
+      try {
+        var Lk = scratch.layers[stack.length - 1 - k], sb = boundsOf(stack[k]), db = boundsOf(Lk);
+        if (sb[2] - sb[0] < 1) continue;
+        var dx = (sb[0] - cb[0]) - db[0], dy = (sb[1] - cb[1]) - db[1];
+        if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) Lk.translate(UnitValue(dx, 'px'), UnitValue(dy, 'px'));
+      } catch (eTr) { notes.push(String(stack[k].name) + ': could not place the copy: ' + eTr); }
+    }
     if (!keepLook) {
       // opacity and blend mode are set on the layer in After Effects instead
       try { var top = scratch.layers[0]; top.opacity = 100; top.blendMode = BlendMode.NORMAL; } catch (eT) {}
     }
-    scratch.crop([UnitValue(cb[0], 'px'), UnitValue(cb[1], 'px'), UnitValue(cb[2], 'px'), UnitValue(cb[3], 'px')]);
+    t0 = tick('move', t0);
     if (!imgDir.exists) imgDir.create();
     var f = new File(imgDir.fsName + '/ps-' + started + '-' + (++imageCount) + '.png');
-    var so = new PNGSaveOptions();
-    try { so.compression = 1; } catch (eC) {}
-    scratch.saveAs(f, so, true, Extension.LOWERCASE);
-    scratch.activeHistoryState = scratchState;
+    savePng(f);
+    t0 = tick('save', t0);
+    scratch.close(SaveOptions.DONOTSAVECHANGES);
+    scratch = null;
     app.activeDocument = doc;
+    tick('close', t0);
     var o = base(stack[0], 'Image', cb);
     o.name = name;
     if (keepLook) { o.opacity = 1; o.blend = 'NORMAL'; }
@@ -142,6 +172,7 @@ function LayerBoatPS_export(opts) {
   // ---------- text ----------
   var JUST = { LEFT: 'LEFT', CENTER: 'CENTER', RIGHT: 'RIGHT', LEFTJUSTIFIED: 'JUSTIFIED', CENTERJUSTIFIED: 'JUSTIFIED', RIGHTJUSTIFIED: 'JUSTIFIED', FULLYJUSTIFIED: 'JUSTIFIED' };
   function textOf(L, d) {
+    var tT = new Date().getTime();
     var ti = L.textItem;
     var o = base(L, 'Text');
     o.type = 'text';
@@ -174,7 +205,7 @@ function LayerBoatPS_export(opts) {
     var segs = [];
     try {
       var ranges = tk.getList(S('textStyleRange')), ref0 = null;
-      for (var i = 0; i < ranges.length; i++) {
+      for (var i = 0; i < ranges.count; i++) {
         var rg = ranges.getObjectValue(i), st = rg.getObjectValue(S('textStyle'));
         var seg = { start: rg.getInteger(S('from')), end: rg.getInteger(S('to')), fontFamily: o.fontFamily, fontStyle: o.fontStyle, fontSize: o.fontSize,
           color: o.color, tracking: o.tracking, leading: o.leading, textCase: o.textCase, underline: false, strike: false };
@@ -221,6 +252,7 @@ function LayerBoatPS_export(opts) {
       o.rotation = r(rot);
       o.scaleX = 100; o.scaleY = r(100 * sy / Math.max(0.0001, sx));
     }
+    tick('text', tT);
     return o;
   }
 
@@ -247,8 +279,9 @@ function LayerBoatPS_export(opts) {
         var pp = pts[k], a = pp.anchor, lft = pp.leftDirection, rgt = pp.rightDirection;
         var ax = px(a[0]), ay = px(a[1]);
         v.push([r(ax - OX - o.x), r(ay - OY - o.y)]);
-        ins.push([r(px(lft[0]) - ax), r(px(lft[1]) - ay)]);
-        outs.push([r(px(rgt[0]) - ax), r(px(rgt[1]) - ay)]);
+        // Photoshop's right handle leads into the point and its left handle leads out
+        ins.push([r(px(rgt[0]) - ax), r(px(rgt[1]) - ay)]);
+        outs.push([r(px(lft[0]) - ax), r(px(lft[1]) - ay)]);
       }
       if (v.length) o.paths.push({ v: v, i: ins, o: outs, closed: !!sp.closed });
     }
@@ -361,7 +394,7 @@ function LayerBoatPS_export(opts) {
     if (!payload) result = 'ERR Nothing to send. Show at least one layer.';
     else {
       for (var w in warnings) if (warnings.hasOwnProperty(w)) payload.warnings.push(w);
-      payload.stats = { seconds: (new Date().getTime() - started) / 1000, images: imageCount, notes: notes };
+      payload.stats = { seconds: (new Date().getTime() - started) / 1000, images: imageCount, notes: notes, steps: PT };
       if (payload.multi) for (var m = 0; m < payload.multi.length; m++) payload.multi[m].warnings = payload.warnings;
       var json = toJSON(payload);
       if (opts.dump) { try { var df = new File(opts.dump); df.encoding = 'UTF-8'; df.open('w'); df.write(json); df.close(); } catch (eD) {} }
