@@ -15,79 +15,133 @@
 <link rel="icon" href="/layerboat/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/layerboat/apple-touch-icon.png">
 <style>
-  :root { --ink:#232326; --soft:#62626a; --faint:#8b8b93; --line:#ebebeb; --bg:#fcfcfc; --card:#ffffff; --chip:#f2f2f2; }
+  :root { --ink:#232326; --soft:#5f5f67; --faint:#8b8b93; --line:#ebebeb; --bg:#fcfcfc; --card:#ffffff; --chip:#f2f2f2;
+          --ae:#9999ff; --aebg:#1b1b2b; --ui:#232325; --ui2:#2c2c2f; --uiline:#3a3a3e; --uitext:#d6d6da; --uifaint:#8d8d95; }
   * { box-sizing:border-box; margin:0; padding:0; }
   html { scroll-behavior:smooth; }
-  body { font:16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  body { font:16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
   a { color:inherit; }
-  .wrap { max-width:960px; margin:0 auto; padding:0 24px; }
+  .wrap { max-width:1000px; margin:0 auto; padding:0 24px; }
   header { display:flex; justify-content:space-between; align-items:center; padding:24px 0; }
   header img { height:32px; display:block; }
   header nav a { font-size:14px; color:var(--soft); text-decoration:none; margin-left:22px; }
   header nav a:hover { color:var(--ink); }
-  .hero { text-align:center; padding:64px 0 72px; }
+  .hero { text-align:center; padding:60px 0 76px; }
   .apps { display:flex; justify-content:center; align-items:center; gap:16px; margin-bottom:36px; }
   .apps img { width:68px; height:68px; border-radius:17px; box-shadow:0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.08); }
   .apps span { color:#bdbdbd; font-size:20px; }
-  h1 { font-family:"Geist Serif", "Iowan Old Style", Georgia, serif; font-weight:400; font-size:clamp(34px, 5.6vw, 56px); line-height:1.08; letter-spacing:-.02em; max-width:760px; margin:0 auto; }
-  .sub { color:var(--soft); font-size:18px; max-width:580px; margin:20px auto 32px; }
+  h1, .serif { font-family:"Geist Serif", "Iowan Old Style", Georgia, serif; font-weight:400; letter-spacing:-.02em; }
+  h1 { font-size:clamp(34px, 5.6vw, 56px); line-height:1.08; max-width:760px; margin:0 auto; }
+  .sub { color:var(--soft); font-size:18px; max-width:560px; margin:20px auto 32px; }
   .btn { display:inline-flex; align-items:center; gap:10px; background:var(--ink); color:#fff; text-decoration:none; font-weight:600; font-size:16px; padding:15px 26px; border-radius:12px; transition:transform .15s cubic-bezier(.32,.72,0,1), box-shadow .15s; box-shadow:0 1px 2px rgba(0,0,0,.2), 0 6px 18px rgba(35,35,38,.18); }
   .btn:hover { transform:translateY(-1px); box-shadow:0 1px 2px rgba(0,0,0,.2), 0 10px 26px rgba(35,35,38,.24); }
   .btn:active { transform:scale(.975); }
   .meta { margin-top:14px; font-size:13px; color:var(--faint); }
   .phone-note { display:none; }
-  section { padding:64px 0; border-top:1px solid var(--line); }
-  .eyebrow { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); font-weight:600; margin-bottom:10px; }
-  h2 { font-size:28px; letter-spacing:-.01em; font-weight:650; margin-bottom:8px; }
-  .lead { color:var(--soft); max-width:620px; margin-bottom:32px; }
-  .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
-  .grid.two { grid-template-columns:repeat(2, 1fr); }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; }
-  .card h3 { font-size:16px; font-weight:650; margin-bottom:6px; }
-  .card p { color:var(--soft); font-size:14.5px; }
-  .card .tag { display:inline-block; font-size:11.5px; color:var(--soft); background:var(--chip); border-radius:6px; padding:2px 7px; margin-top:10px; }
-  .route h3 { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
-  .route h3 img { width:22px; height:22px; border-radius:6px; }
-  .route h3 .arr { color:var(--faint); font-weight:400; }
-  .route ol { list-style:none; counter-reset:s; display:grid; gap:10px; }
-  .route li { counter-increment:s; position:relative; padding-left:30px; color:var(--soft); font-size:14.5px; }
-  .route li::before { content:counter(s); position:absolute; left:0; top:1px; width:20px; height:20px; border-radius:50%; background:var(--chip); color:var(--ink); font-size:11.5px; font-weight:600; display:grid; place-items:center; }
-  .route .alt { margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-size:13.5px; color:var(--faint); }
-  ol.steps { list-style:none; counter-reset:s; display:grid; gap:12px; }
-  ol.steps li { counter-increment:s; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 22px 18px 64px; position:relative; }
-  ol.steps li::before { content:counter(s); position:absolute; left:20px; top:17px; width:28px; height:28px; border-radius:50%; background:var(--ink); color:#fff; font-size:13px; font-weight:600; display:grid; place-items:center; }
-  ol.steps li b { display:block; }
-  ol.steps li span { color:var(--soft); font-size:14.5px; display:block; margin-top:2px; }
-  code { font:13px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--chip); padding:1px 6px; border-radius:5px; overflow-wrap:anywhere; }
+  section { padding:72px 0; border-top:1px solid var(--line); }
+  .sec-head { max-width:620px; margin-bottom:40px; }
+  .sec-head h2 { font-family:"Geist Serif", "Iowan Old Style", Georgia, serif; font-weight:400; font-size:38px; line-height:1.12; letter-spacing:-.015em; margin-bottom:12px; }
+  .sec-head p { color:var(--soft); font-size:17px; }
+
+  /* features */
+  .feature { display:grid; grid-template-columns:1fr 1.15fr; gap:48px; align-items:center; padding:28px 0; }
+  .feature + .feature { border-top:1px dashed var(--line); }
+  .feature.flip .copy { order:2; }
+  .feature h3 { font-size:22px; font-weight:650; letter-spacing:-.01em; line-height:1.25; margin-bottom:10px; }
+  .feature p { color:var(--soft); font-size:16px; }
+  .stage { background:linear-gradient(180deg,#f4f4f6,#ececf0); border:1px solid var(--line); border-radius:18px; padding:26px; display:flex; align-items:center; justify-content:center; gap:14px; min-height:260px; overflow:hidden; }
+  .win { background:var(--ui); border-radius:10px; box-shadow:0 1px 2px rgba(0,0,0,.2), 0 14px 34px rgba(20,20,30,.22); color:var(--uitext); font-size:12px; overflow:hidden; }
+  .win .bar { display:flex; align-items:center; gap:6px; padding:8px 10px; background:var(--ui2); border-bottom:1px solid var(--uiline); font-size:11px; color:var(--uifaint); }
+  .win .bar img { width:14px; height:14px; border-radius:4px; }
+  .row { display:flex; align-items:center; gap:8px; padding:6px 10px; border-bottom:1px solid #2b2b2e; white-space:nowrap; }
+  .row .ix { width:14px; color:var(--uifaint); font-size:10.5px; text-align:right; }
+  .ico { width:15px; height:15px; border-radius:3px; display:grid; place-items:center; font-size:9px; font-weight:700; flex:none; }
+  .i-frame { border:1.5px solid #8d8d95; }
+  .i-text { color:#fff; background:#55555c; }
+  .i-shape { background:#6c6cf0; color:#fff; }
+  .i-img { background:linear-gradient(135deg,#f5b14c,#e96a8d); }
+  .i-group { border:1.5px dashed #8d8d95; }
+  .indent { padding-left:26px; }
+  .arrow { color:#a3a3ab; font-size:22px; flex:none; }
+  .lanes { position:relative; flex:1; height:100%; }
+  .kf { position:absolute; top:50%; width:8px; height:8px; background:#e8c25c; transform:translate(-50%,-50%) rotate(45deg); border-radius:1px; }
+  .bar-span { position:absolute; top:50%; height:12px; transform:translateY(-50%); border-radius:3px; opacity:.55; }
+  .toast { position:absolute; right:14px; bottom:14px; background:#fff; color:var(--ink); border-radius:10px; padding:8px 12px; font-size:12px; font-weight:600; box-shadow:0 8px 22px rgba(0,0,0,.18); display:flex; align-items:center; gap:7px; }
+  .toast i { width:8px; height:8px; border-radius:50%; background:#34c47c; display:inline-block; }
+  .loop { position:relative; width:280px; height:220px; }
+  .loop img { position:absolute; width:62px; height:62px; border-radius:16px; box-shadow:0 8px 22px rgba(0,0,0,.14); }
+  .loop svg { position:absolute; inset:0; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:28px; }
+  .chip { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--soft); }
+
+  /* install */
+  ol.steps { list-style:none; counter-reset:s; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  ol.steps li { counter-increment:s; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; position:relative; }
+  ol.steps li::before { content:counter(s); width:26px; height:26px; border-radius:50%; background:var(--ink); color:#fff; font-size:12.5px; font-weight:600; display:grid; place-items:center; margin-bottom:14px; }
+  ol.steps li .app { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--faint); margin-bottom:6px; }
+  ol.steps li .app img { width:16px; height:16px; border-radius:4px; }
+  ol.steps li b { display:block; font-size:15.5px; margin-bottom:4px; }
+  ol.steps li span { color:var(--soft); font-size:14px; display:block; }
+  .warn { margin-top:14px; font-size:14px; color:var(--soft); background:#fff8e6; border:1px solid #f3e2b3; border-radius:12px; padding:12px 16px; }
+  code { font:12.5px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--chip); padding:1px 5px; border-radius:5px; overflow-wrap:anywhere; }
   kbd { font:500 13.5px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; color:var(--ink); background:var(--chip); padding:1px 6px; border-radius:5px; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+
+  /* how to use: route picker */
+  .picker { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:22px; }
+  .picker .lbl { font-size:13px; color:var(--faint); font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
+  .seg { display:inline-flex; background:var(--chip); border-radius:12px; padding:4px; gap:2px; }
+  .seg button { all:unset; cursor:pointer; display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:9px; font-size:14px; font-weight:550; color:var(--soft); transition:background .15s, color .15s, box-shadow .15s; }
+  .seg button img { width:18px; height:18px; border-radius:5px; }
+  .seg button[aria-pressed="true"] { background:#fff; color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.06); }
+  .seg button[disabled] { opacity:.35; cursor:default; }
+  .seg button:focus-visible { outline:2px solid #6c6cf0; outline-offset:2px; }
+  .route { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .route .st { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; }
+  .route .st .n { font-size:12px; color:var(--faint); font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:7px; }
+  .route .st .n img { width:16px; height:16px; border-radius:4px; }
+  .route .st p { font-size:15px; color:var(--ink); }
+  .route-tip { margin-top:12px; font-size:14px; color:var(--soft); }
+  .fade { animation:fade .28s cubic-bezier(.22,1,.36,1); }
+  @keyframes fade { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+
+  /* faq */
   details { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:0 20px; margin-bottom:10px; }
   summary { cursor:pointer; list-style:none; padding:16px 0; font-weight:600; display:flex; justify-content:space-between; gap:16px; }
   summary::-webkit-details-marker { display:none; }
   summary::after { content:"+"; color:var(--faint); font-weight:400; font-size:20px; line-height:1; transition:transform .2s cubic-bezier(.32,.72,0,1); }
   details[open] summary::after { transform:rotate(45deg); }
-  details p { color:var(--soft); font-size:14.5px; padding-bottom:16px; }
+  details p { color:var(--soft); font-size:15px; padding-bottom:16px; }
   .cta { text-align:center; }
-  .cta h2 { font-family:"Geist Serif", "Iowan Old Style", Georgia, serif; font-weight:400; font-size:34px; margin-bottom:24px; }
+  .cta h2 { font-size:36px; margin-bottom:24px; }
   footer { border-top:1px solid var(--line); padding:28px 0 44px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:13.5px; color:var(--faint); }
   footer a { text-decoration:none; } footer a:hover { color:var(--ink); }
-  @media (max-width:760px) {
+
+  @media (max-width:860px) {
+    .feature, .feature.flip { grid-template-columns:1fr; gap:22px; }
+    .feature.flip .copy { order:0; }
+    ol.steps { grid-template-columns:1fr 1fr; }
+    .route { grid-template-columns:1fr; }
+  }
+  @media (max-width:600px) {
     .wrap { padding:0 20px; }
     header { padding:18px 0; } header img { height:28px; }
     header nav a:not(:last-child) { display:none; }
-    .hero { padding:28px 0 48px; }
+    .hero { padding:28px 0 52px; }
     .apps img { width:54px; height:54px; border-radius:14px; }
     h1 { font-size:34px; }
     .sub { font-size:16px; }
     .btn { width:100%; justify-content:center; }
     .phone-note { display:block; margin-top:14px; font-size:13.5px; background:var(--chip); border-radius:10px; padding:10px 14px; }
-    section { padding:44px 0; }
-    h2 { font-size:24px; }
-    .grid, .grid.two { grid-template-columns:1fr; gap:12px; }
-    ol.steps li { padding:16px 18px 16px 56px; }
-    ol.steps li::before { left:16px; top:15px; }
+    section { padding:52px 0; }
+    .sec-head h2 { font-size:30px; }
+    .stage { padding:16px; min-height:0; flex-direction:column; }
+    .stage .arrow { transform:rotate(90deg); }
+    .win { width:100% !important; }
+    ol.steps { grid-template-columns:1fr; }
+    .seg button span { display:none; }
     footer { flex-direction:column; }
   }
-  @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .btn, summary::after { transition:none; } }
+  @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .btn, summary::after, .seg button { transition:none; } .fade { animation:none; } }
 </style>
 <script>if(/github\.io$/.test(location.hostname))location.replace("https://tobihassan.com/layerboat"+location.hash);</script>
 <script>if(/(^|\.)tobihassan\.com$/.test(location.hostname)){window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments)};["/_vercel/insights/script.js","/_vercel/speed-insights/script.js"].forEach(function(s){var e=document.createElement("script");e.defer=1;e.src=s;document.head.appendChild(e)})}</script>
@@ -96,7 +150,7 @@
 <div class="wrap">
   <header>
     <a href="/layerboat"><img src="/layerboat/logo-lockup.svg" alt="LayerBoat"></a>
-    <nav><a href="#features">Features</a><a href="#use">How to use</a><a href="#install">Install</a><a href="#faq">FAQ</a><a href="https://github.com/HassanOluwatobi/layerboat">GitHub</a></nav>
+    <nav><a href="#features">Features</a><a href="#install">Install</a><a href="#use">How to use</a><a href="#faq">FAQ</a><a href="https://github.com/HassanOluwatobi/layerboat">GitHub</a></nav>
   </header>
 
   <div class="hero">
@@ -104,7 +158,7 @@
       <img src="/layerboat/figma.png" alt=""><span>⇄</span><img src="/layerboat/after-effects.png" alt=""><span>⇄</span><img src="/layerboat/illustrator.png" alt="">
     </div>
     <h1>Move your designs between Figma, Illustrator and After Effects.</h1>
-    <p class="sub">Send a Figma frame to After Effects and it lands as shape layers and text you can animate. Send it back when you're done. Free, with the code in the open.</p>
+    <p class="sub">Send a Figma frame to After Effects and start animating the real layers. When you're done, send it back. It's free, and the code is open for anyone.</p>
     <a class="btn" id="dl" onclick="window.va&&window.va('event',{name:'Download'})" href="https://github.com/HassanOluwatobi/layerboat/releases/latest">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>
       <span id="dl-label">Download LayerBoat</span>
@@ -114,91 +168,197 @@
   </div>
 
   <section id="features">
-    <p class="eyebrow">Features</p>
-    <h2>What comes across</h2>
-    <p class="lead">LayerBoat rebuilds your design with each app's own tools. You get layers you can work with, not a picture of them.</p>
-    <div class="grid">
-      <div class="card"><h3>Shapes stay shapes</h3><p>Rectangles, ellipses, stars, polygons and pen paths become native shape layers, with their fills, strokes, dashes and rounded corners.</p></div>
-      <div class="card"><h3>Text stays editable</h3><p>Every text box arrives as a real text layer with its font, size, spacing and line height. Change the words in After Effects and keep going.</p><span class="tag">Mixed styles in one box need After Effects 2024.3 or newer</span></div>
-      <div class="card"><h3>Gradients, images and masks</h3><p>Linear and radial gradients, image fills and clipping masks all come with your layers.</p></div>
-      <div class="card"><h3>Your names and groups</h3><p>Layer names carry over. Groups become parent layers you can move together, and one click turns a group into its own precomp.</p></div>
-      <div class="card"><h3>Send again, keep your animation</h3><p>Changed the design? Send the frame again. LayerBoat rebuilds it in the same comp and leaves your keyframes, effects and added layers alone.</p></div>
-      <div class="card"><h3>Round trips</h3><p>Send a comp back to Figma, or open it in Illustrator on a new artboard with names and editable text intact.</p></div>
-      <div class="card"><h3>Swap one shape</h3><p>Redrew a shape in Illustrator? Update from Illustrator replaces that one path in your comp, so you don't have to rebuild the layer.</p></div>
-      <div class="card"><h3>An image when you need one</h3><p>For effects that only Illustrator can draw, As an image brings the artwork in as a single sharp image layer in its place.</p></div>
-      <div class="card"><h3>Nothing leaves your computer</h3><p>Designs travel through a small helper on your own machine. There's no account and nothing is uploaded.</p></div>
+    <div class="sec-head">
+      <h2>Your design, ready to animate.</h2>
+      <p>Most tools hand you a flat picture of your frame. LayerBoat rebuilds it with each app's own layers, so you can pick up right where the design left off.</p>
     </div>
-  </section>
 
-  <section id="use">
-    <p class="eyebrow">How to use</p>
-    <h2>Every direction, step by step</h2>
-    <p class="lead">Keep the LayerBoat panel open in After Effects (<kbd>Window › LayerBoat.jsx</kbd>) and the LayerBoat panel open in Illustrator. In Figma, run the plugin from <kbd>Plugins › Development › LayerBoat</kbd>.</p>
-    <div class="grid two">
-      <div class="card route">
-        <h3><img src="/layerboat/figma.png" alt="">Figma <span class="arr">→</span> <img src="/layerboat/after-effects.png" alt="">After Effects</h3>
-        <ol><li>In After Effects, tick <b>Receive live from Figma</b> in the LayerBoat panel.</li><li>In Figma, select a frame and open the LayerBoat plugin.</li><li>Click <b>Send to After Effects</b>. The frame opens as a new comp.</li></ol>
-        <p class="alt">Want it in the comp you're working in? Tick <b>Paste into the open comp</b> first.</p>
+    <div class="feature">
+      <div class="copy">
+        <h3>Layers arrive as layers, with their names.</h3>
+        <p>Send a frame and you get shape layers, text you can retype and your images, named exactly as they were in Figma. Gradients, masks, dashed strokes and rounded corners come along too.</p>
       </div>
-      <div class="card route">
-        <h3><img src="/layerboat/after-effects.png" alt="">After Effects <span class="arr">→</span> <img src="/layerboat/figma.png" alt="">Figma</h3>
-        <ol><li>In Figma, open the LayerBoat plugin and leave it open.</li><li>In After Effects, open the comp. Select layers to send only those.</li><li>Click <b>Send comp to Figma</b>. It appears in Figma as a frame.</li></ol>
+      <div class="stage" aria-hidden="true">
+        <div class="win" style="width:190px">
+          <div class="bar"><img src="/layerboat/figma.png" alt="">Layers</div>
+          <div class="row"><span class="ico i-frame"></span>Pricing card</div>
+          <div class="row indent"><span class="ico i-text">T</span>Plan name</div>
+          <div class="row indent"><span class="ico i-text">T</span>$12 / month</div>
+          <div class="row indent"><span class="ico i-img"></span>Avatar</div>
+          <div class="row indent"><span class="ico i-group"></span>Button</div>
+          <div class="row indent" style="border:0"><span class="ico i-frame"></span>Background</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="win" style="width:230px">
+          <div class="bar"><img src="/layerboat/after-effects.png" alt="">Pricing card</div>
+          <div class="row"><span class="ix">1</span><span class="ico i-text">T</span>Plan name</div>
+          <div class="row"><span class="ix">2</span><span class="ico i-text">T</span>$12 / month</div>
+          <div class="row"><span class="ix">3</span><span class="ico i-img"></span>Avatar</div>
+          <div class="row"><span class="ix">4</span><span class="ico i-shape">★</span>Button</div>
+          <div class="row" style="border:0"><span class="ix">5</span><span class="ico i-shape">★</span>Background</div>
+        </div>
       </div>
-      <div class="card route">
-        <h3><img src="/layerboat/illustrator.png" alt="">Illustrator <span class="arr">→</span> <img src="/layerboat/after-effects.png" alt="">After Effects</h3>
-        <ol><li>In Illustrator, select artwork. Select nothing to send the whole artboard.</li><li>In After Effects, click <b>Bring in from Illustrator</b> in the LayerBoat panel.</li><li>The artwork opens as a new comp, with text still editable.</li></ol>
-        <p class="alt">Or work from Illustrator: tick Receive live in After Effects, then click <b>Send to After Effects</b> in Illustrator's LayerBoat panel.</p>
+    </div>
+
+    <div class="feature flip">
+      <div class="copy">
+        <h3>Change the design and keep the animation.</h3>
+        <p>Designs change after you've started animating. When they do, update the frame in Figma and send it again. LayerBoat rebuilds it in the same comp and leaves your keyframes, effects and extra layers where you put them.</p>
       </div>
-      <div class="card route">
-        <h3><img src="/layerboat/after-effects.png" alt="">After Effects <span class="arr">→</span> <img src="/layerboat/illustrator.png" alt="">Illustrator</h3>
-        <ol><li>Open Illustrator.</li><li>In After Effects, open the comp. Select layers to send only those.</li><li>Click <b>Send comp to Illustrator</b>. It lands on a new artboard.</li></ol>
+      <div class="stage" aria-hidden="true" style="position:relative">
+        <div class="win" style="width:100%;max-width:420px">
+          <div class="bar"><img src="/layerboat/after-effects.png" alt="">Pricing card · Timeline</div>
+          <div class="row"><span class="ix">1</span><span class="ico i-text">T</span><span style="width:84px">Plan name</span><span class="lanes" style="height:14px"><span class="bar-span" style="left:0;right:0;background:#6c6cf0"></span><span class="kf" style="left:8%"></span><span class="kf" style="left:34%"></span></span></div>
+          <div class="row"><span class="ix">2</span><span class="ico i-text">T</span><span style="width:84px">$12 / month</span><span class="lanes" style="height:14px"><span class="bar-span" style="left:0;right:0;background:#6c6cf0"></span><span class="kf" style="left:16%"></span><span class="kf" style="left:42%"></span></span></div>
+          <div class="row"><span class="ix">3</span><span class="ico i-img"></span><span style="width:84px">Avatar</span><span class="lanes" style="height:14px"><span class="bar-span" style="left:0;right:0;background:#e96a8d"></span><span class="kf" style="left:24%"></span><span class="kf" style="left:58%"></span><span class="kf" style="left:80%"></span></span></div>
+          <div class="row" style="border:0"><span class="ix">4</span><span class="ico i-shape">★</span><span style="width:84px">Button</span><span class="lanes" style="height:14px"><span class="bar-span" style="left:0;right:0;background:#6c6cf0"></span><span class="kf" style="left:50%"></span><span class="kf" style="left:70%"></span></span></div>
+        </div>
+        <div class="toast"><i></i>Updated from Figma. Keyframes kept.</div>
       </div>
-      <div class="card route">
-        <h3><img src="/layerboat/figma.png" alt="">Figma <span class="arr">→</span> <img src="/layerboat/illustrator.png" alt="">Illustrator</h3>
-        <ol><li>In Figma, select a frame and click <b>Send to Illustrator</b> in the plugin.</li><li>In Illustrator, click <b>Bring in from Figma</b> in the LayerBoat panel.</li><li>The frame lands on a new artboard, or in a new document if none is open.</li></ol>
+    </div>
+
+    <div class="feature">
+      <div class="copy">
+        <h3>Go any direction you like.</h3>
+        <p>Send a comp back to Figma for review, or open it in Illustrator on a new artboard. Illustrator artwork can go to either app too. Text stays editable on every trip.</p>
       </div>
-      <div class="card route">
-        <h3><img src="/layerboat/illustrator.png" alt="">Illustrator <span class="arr">→</span> <img src="/layerboat/figma.png" alt="">Figma</h3>
-        <ol><li>In Figma, open the LayerBoat plugin and leave it open.</li><li>In Illustrator, select artwork, or nothing for the whole artboard.</li><li>Click <b>Send to Figma</b> in Illustrator's LayerBoat panel.</li></ol>
+      <div class="stage" aria-hidden="true">
+        <div class="loop">
+          <svg viewBox="0 0 280 220" fill="none" stroke="#b9b9c2" stroke-width="2" stroke-linecap="round">
+            <path d="M92 52 Q140 22 188 52" marker-end="url(#a)" marker-start="url(#a)"/>
+            <path d="M210 104 Q214 150 170 178" marker-end="url(#a)" marker-start="url(#a)"/>
+            <path d="M110 178 Q66 150 70 104" marker-end="url(#a)" marker-start="url(#a)"/>
+            <defs><marker id="a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b9b9c2" stroke="none"/></marker></defs>
+          </svg>
+          <img src="/layerboat/figma.png" alt="" style="left:30px;top:40px">
+          <img src="/layerboat/after-effects.png" alt="" style="right:30px;top:40px">
+          <img src="/layerboat/illustrator.png" alt="" style="left:109px;bottom:8px">
+        </div>
       </div>
+    </div>
+
+    <div class="feature flip">
+      <div class="copy">
+        <h3>Everything stays on your computer.</h3>
+        <p>Your designs travel through a small helper running on your own machine. There's no account to make and nothing is uploaded.</p>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <div class="win" style="width:260px;padding:18px;text-align:center">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d6d6da" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:8px"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          <div style="font-size:13px;font-weight:600;color:#fff">Your Mac or PC</div>
+          <div style="font-size:11.5px;color:var(--uifaint);margin-top:4px">Figma, Illustrator and After Effects talk to each other here. No cloud in between.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chips">
+      <span class="chip">Turn a group into a precomp in one click</span>
+      <span class="chip">Swap one shape from Illustrator</span>
+      <span class="chip">Bring artwork in as a sharp image</span>
+      <span class="chip">Combine icons into one layer</span>
+      <span class="chip">Centre anchor points</span>
+      <span class="chip">Paste into the open comp</span>
     </div>
   </section>
 
   <section id="install">
-    <p class="eyebrow">Install</p>
-    <h2>Set up once, in four steps</h2>
-    <p class="lead">The installer in step 2 sets up all three apps. Steps 3 and 4 connect Figma and Illustrator to it.</p>
+    <div class="sec-head">
+      <h2>Set it up once.</h2>
+      <p>Four steps, about five minutes. The installer in step two sets up all three apps for you.</p>
+    </div>
     <ol class="steps">
-      <li><b>Download and unzip.</b><span>You get a folder called LayerBoat. Keep it until you've finished step 4.</span></li>
-      <li><b>Run the installer in After Effects.</b><span>Go to <kbd>File › Scripts › Run Script File</kbd> and pick <code>Install LayerBoat.jsx</code>. Use Run Script File. The option called Install ScriptUI Panel is a different one and won't work. The panel opens straight away, and lives under <kbd>Window › LayerBoat.jsx</kbd> from then on.</span></li>
-      <li><b>Add the Figma plugin.</b><span>In Figma, go to <kbd>Plugins › Development › Import plugin from manifest</kbd>. The installer shows the file to pick and has a Copy path button.</span></li>
-      <li><b>Open the Illustrator panel.</b><span>In Illustrator, go to <kbd>File › Scripts › Other Script</kbd> and pick <code>LayerBoat Panel.jsx</code> in the folder the installer shows. Keep the panel open beside your artwork.</span></li>
+      <li><b>Download and unzip</b><span>You get a folder called LayerBoat. Keep it until you've finished.</span></li>
+      <li><div class="app"><img src="/layerboat/after-effects.png" alt="">After Effects</div><b>Run the installer</b><span>Go to <kbd>File › Scripts › Run Script File</kbd> and pick <code>Install LayerBoat.jsx</code>. The panel opens right away.</span></li>
+      <li><div class="app"><img src="/layerboat/figma.png" alt="">Figma</div><b>Add the plugin</b><span>Go to <kbd>Plugins › Development › Import plugin from manifest</kbd>. The installer shows you which file to pick.</span></li>
+      <li><div class="app"><img src="/layerboat/illustrator.png" alt="">Illustrator</div><b>Open the panel</b><span>Go to <kbd>File › Scripts › Other Script</kbd> and pick <code>LayerBoat Panel.jsx</code> from the folder the installer shows.</span></li>
     </ol>
+    <p class="warn">In After Effects, use Run Script File. The option just below it, Install ScriptUI Panel, is a different one and won't set LayerBoat up.</p>
+  </section>
+
+  <section id="use">
+    <div class="sec-head">
+      <h2>How to use it.</h2>
+      <p>Pick where your design is and where you want it to go.</p>
+    </div>
+    <div class="picker">
+      <span class="lbl">From</span>
+      <div class="seg" id="from" role="group" aria-label="From"></div>
+      <span class="lbl">To</span>
+      <div class="seg" id="to" role="group" aria-label="To"></div>
+    </div>
+    <div class="route" id="route" aria-live="polite"></div>
+    <p class="route-tip" id="tip"></p>
   </section>
 
   <section id="faq">
-    <p class="eyebrow">FAQ</p>
-    <h2>Questions</h2>
-    <details><summary>Is it really free?</summary><p>Yes. No account, no trial, no paid tier. The code is MIT licensed, so anyone can read it, change it or build on it.</p></details>
+    <div class="sec-head"><h2>Questions.</h2></div>
+    <details><summary>Is it really free?</summary><p>Yes. There's no account, no trial and no paid version. The code is MIT licensed, so anyone can read it, change it or build on it.</p></details>
     <details><summary>Does it upload my designs anywhere?</summary><p>No. Your designs move between apps through a helper running on your own computer. Nothing is sent online.</p></details>
-    <details><summary>Which versions does it work with?</summary><p>It's tested with After Effects and Illustrator 2026 and 2027 on a Mac, and the current Figma desktop app. Older versions back to 2022 should work. Text with mixed styles in one box needs After Effects 2024.3 or newer.</p></details>
-    <details><summary>Does it work on Windows?</summary><p>It's built for Windows and passes our Windows tests, but nobody has tried it on a real PC yet. If you do, please tell us how it went on GitHub.</p></details>
+    <details><summary>Which versions does it work with?</summary><p>Recent versions of After Effects and Illustrator, and the Figma desktop app. Text with mixed styles in one box needs After Effects 2024.3 or newer.</p></details>
+    <details><summary>Does it work on Windows?</summary><p>Yes. LayerBoat works on Mac and Windows.</p></details>
     <details><summary>Nothing arrives in After Effects. What do I check?</summary><p>Make sure Receive live from Figma is ticked in the panel, and that <kbd>Settings › Scripting &amp; Expressions › Allow Scripts to Write Files and Access Network</kbd> is on. You can also click Copy instead in the Figma plugin, then Paste from Figma in After Effects.</p></details>
-    <details><summary>How is this different from Overlord?</summary><p>Overlord is a paid, polished tool that also covers Photoshop. LayerBoat is free and open source, and covers Figma, Illustrator and After Effects.</p></details>
     <details><summary>How do I remove it?</summary><p>Run <code>Uninstall LayerBoat.jsx</code> from the download the same way you ran the installer. Then remove the plugin in Figma under <kbd>Plugins › Development › Manage plugins in development</kbd>.</p></details>
     <details><summary>I found a bug.</summary><p><a href="https://github.com/HassanOluwatobi/layerboat/issues/new" style="text-decoration:underline">Open an issue on GitHub</a>. Say which apps you used, what you sent and what came out. A screenshot helps a lot.</p></details>
   </section>
 
   <section class="cta">
-    <h2>Try it on your next animation.</h2>
+    <h2 class="serif">Try it on your next animation.</h2>
     <a class="btn" href="https://github.com/HassanOluwatobi/layerboat/releases/latest" onclick="window.va&&window.va('event',{name:'Download'})" id="dl2">Download LayerBoat</a>
   </section>
 
   <footer>
-    <span>Made by <a href="https://tobihassan.com" style="text-decoration:underline">Hassan Oluwatobi</a>. Free and open source under the MIT licence. Not affiliated with Figma or Adobe.</span>
+    <span>Made by <a href="https://x.com/Art_sassin" style="text-decoration:underline">Hassan Oluwatobi</a>. Free and open source under the MIT licence. Not affiliated with Figma or Adobe.</span>
     <a href="https://github.com/HassanOluwatobi/layerboat">github.com/HassanOluwatobi/layerboat</a>
   </footer>
 </div>
+<script>
+(function () {
+  var apps = {
+    figma: { name: 'Figma', icon: '/layerboat/figma.png' },
+    ae: { name: 'After Effects', icon: '/layerboat/after-effects.png' },
+    ai: { name: 'Illustrator', icon: '/layerboat/illustrator.png' }
+  };
+  var routes = {
+    'figma>ae': { steps: [['ae', 'In the LayerBoat panel, tick <b>Receive live from Figma</b>.'], ['figma', 'Select a frame and open the LayerBoat plugin.'], ['figma', 'Click <b>Send to After Effects</b>. The frame opens as a new comp.']],
+      tip: 'Want it in the comp you already have open? Tick <b>Paste into the open comp</b> first.' },
+    'ae>figma': { steps: [['figma', 'Open the LayerBoat plugin and leave it open.'], ['ae', 'Open your comp. Select layers if you only want those.'], ['ae', 'Click <b>Send comp to Figma</b>. It appears in Figma as a frame.']], tip: '' },
+    'ai>ae': { steps: [['ai', 'Select your artwork. Select nothing to send the whole artboard.'], ['ae', 'In the LayerBoat panel, click <b>Bring in from Illustrator</b>.'], ['ae', 'It opens as a new comp, with the text still editable.']],
+      tip: 'Prefer to start from Illustrator? Tick Receive live in After Effects, then click <b>Send to After Effects</b> in Illustrator’s LayerBoat panel.' },
+    'ae>ai': { steps: [['ai', 'Have Illustrator open.'], ['ae', 'Open your comp. Select layers if you only want those.'], ['ae', 'Click <b>Send comp to Illustrator</b>. It lands on a new artboard.']], tip: '' },
+    'figma>ai': { steps: [['figma', 'Select a frame and click <b>Send to Illustrator</b> in the plugin.'], ['ai', 'In the LayerBoat panel, click <b>Bring in from Figma</b>.'], ['ai', 'The frame lands on a new artboard, or in a new document if none is open.']], tip: '' },
+    'ai>figma': { steps: [['figma', 'Open the LayerBoat plugin and leave it open.'], ['ai', 'Select your artwork, or nothing for the whole artboard.'], ['ai', 'In the LayerBoat panel, click <b>Send to Figma</b>.']], tip: '' }
+  };
+  var from = 'figma', to = 'ae';
+  var fromEl = document.getElementById('from'), toEl = document.getElementById('to');
+  function btns(el, which) {
+    el.innerHTML = '';
+    Object.keys(apps).forEach(function (k) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = '<img src="' + apps[k].icon + '" alt=""><span>' + apps[k].name + '</span>';
+      b.setAttribute('aria-label', apps[k].name);
+      var on = which === 'from' ? k === from : k === to;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (which === 'to' && k === from) b.disabled = true;
+      b.onclick = function () {
+        if (which === 'from') { from = k; if (to === from) to = k === 'ae' ? 'figma' : 'ae'; }
+        else to = k;
+        render();
+      };
+      el.appendChild(b);
+    });
+  }
+  function render() {
+    btns(fromEl, 'from'); btns(toEl, 'to');
+    var r = routes[from + '>' + to], box = document.getElementById('route');
+    box.innerHTML = r.steps.map(function (s, i) {
+      return '<div class="st fade" style="animation-delay:' + (i * 50) + 'ms"><div class="n"><img src="' + apps[s[0]].icon + '" alt="">Step ' + (i + 1) + ' · ' + apps[s[0]].name + '</div><p>' + s[1] + '</p></div>';
+    }).join('');
+    document.getElementById('tip').innerHTML = r.tip;
+  }
+  render();
+})();
+</script>
 <script>
 // Point the button straight at the newest zip, so one click downloads it.
 fetch('https://api.github.com/repos/HassanOluwatobi/layerboat/releases/latest')
