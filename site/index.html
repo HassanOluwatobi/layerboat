@@ -281,6 +281,8 @@
     </div>
 
     <div class="chips">
+      <span class="chip">Send several frames at once</span>
+      <span class="chip">Photoshop layers in a comp go along as images</span>
       <span class="chip">Turn a group into a precomp in one click</span>
       <span class="chip">Swap one shape from Illustrator</span>
       <span class="chip">Bring artwork in as a sharp image</span>
@@ -363,12 +365,12 @@
   };
   var routes = {
     'figma>ae': { steps: [['ae', 'In the LayerBoat panel, tick <b>Receive live from Figma</b>.'], ['figma', 'Select a frame and open the LayerBoat plugin.'], ['figma', 'Click <b>Send to After Effects</b>. The frame opens as a new comp.']],
-      tip: 'Want it in the comp you already have open? Tick <b>Paste into the open comp</b> first.' },
+      tip: 'Select several frames to send them all at once. Each one becomes its own comp.' },
     'ae>figma': { steps: [['figma', 'Open the LayerBoat plugin and leave it open.'], ['ae', 'Open your comp. Select layers if you only want those.'], ['ae', 'Click <b>Send comp to Figma</b>. It appears in Figma as a frame.']], tip: '' },
     'ai>ae': { steps: [['ai', 'Select your artwork. Select nothing to send the whole artboard.'], ['ae', 'In the LayerBoat panel, click <b>Bring in from Illustrator</b>.'], ['ae', 'It opens as a new comp, with the text still editable.']],
       tip: 'Prefer to start from Illustrator? Tick Receive live in After Effects, then click <b>Send to After Effects</b> in Illustrator’s LayerBoat panel.' },
     'ae>ai': { steps: [['ai', 'Have Illustrator open.'], ['ae', 'Open your comp. Select layers if you only want those.'], ['ae', 'Click <b>Send comp to Illustrator</b>. It lands on a new artboard.']], tip: '' },
-    'figma>ai': { steps: [['figma', 'Select a frame and click <b>Send to Illustrator</b> in the plugin.'], ['ai', 'In the LayerBoat panel, click <b>Bring in from Figma</b>.'], ['ai', 'The frame lands on a new artboard, or in a new document if none is open.']], tip: '' },
+    'figma>ai': { steps: [['figma', 'Select a frame and click <b>Send to Illustrator</b> in the plugin.'], ['ai', 'In the LayerBoat panel, click <b>Bring in from Figma</b>.'], ['ai', 'The frame lands on a new artboard, or in a new document if none is open.']], tip: 'Select several frames to send them all at once. Each one gets its own artboard.' },
     'ai>figma': { steps: [['figma', 'Open the LayerBoat plugin and leave it open.'], ['ai', 'Select your artwork, or nothing for the whole artboard.'], ['ai', 'In the LayerBoat panel, click <b>Send to Figma</b>.']], tip: '' }
   };
   var from = 'figma', to = 'ae';

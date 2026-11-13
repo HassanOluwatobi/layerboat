@@ -1,6 +1,6 @@
 // LayerBoat: core builder. Loaded by the panel and by the test runner.
 var LayerBoatCore = (function () {
-  var VERSION = '1.5.2';
+  var VERSION = '1.6';
   var LOG_FILE = null;
   // an error as text; some After Effects errors cannot be added to a string directly
   function errText(x) {
@@ -1966,6 +1966,17 @@ var LayerBoatCore = (function () {
   }
 
   function build(data, opts) {
+    // several Figma frames sent together: one comp each
+    if (data && data.multi && data.multi.length) {
+      var each = {}, made = [];
+      for (var ok in opts) if (opts.hasOwnProperty(ok)) each[ok] = opts[ok];
+      each.intoActive = false;
+      for (var mi = 0; mi < data.multi.length; mi++) {
+        try { build(data.multi[mi], each); made.push(data.multi[mi].name); } catch (eM) { log('frame failed: ' + errText(eM)); }
+      }
+      LayerBoatCore.lastStatus = 'Built ' + made.length + ' comps: ' + made.join(', ') + '.';
+      return;
+    }
     notes = {};
     T = {};
     NULL_SIZE = [];
@@ -2493,6 +2504,32 @@ var LayerBoatCore = (function () {
     }
     return null;
   }
+  // Draws a footage item (a Photoshop layer, a TIFF, a video frame) to a PNG through a
+  // throwaway comp, and gives back the PNG as base64.
+  function footageToPng(item) {
+    var tmp = null, out = null;
+    try {
+      var w = Math.max(4, Math.round(item.width)), h = Math.max(4, Math.round(item.height));
+      tmp = app.project.items.addComp('LayerBoat temp', w, h, 1, 1, 30);
+      tmp.layers.add(item);
+      var file = new File(Folder.temp.fsName + '/layerboat-footage-' + item.id + '-' + new Date().getTime() + '.png');
+      if (typeof tmp.saveFrameToPng !== 'function') return null;
+      tmp.saveFrameToPng(0, file);
+      // the PNG is written in the background; wait until it is complete
+      var last = -1;
+      for (var i = 0; i < 80; i++) {
+        if (file.exists && file.length > 0 && file.length === last) break;
+        last = file.exists ? file.length : -1;
+        $.sleep(100);
+      }
+      if (file.exists && file.length > 0) {
+        file.encoding = 'BINARY'; file.open('r'); out = base64Of(file.read()); file.close();
+        try { file.remove(); } catch (eR) {}
+      }
+    } catch (e) { log('footage to png failed: ' + errText(e)); out = null; }
+    finally { try { if (tmp) tmp.remove(); } catch (eT) {} }
+    return out;
+  }
   function exportLayer(L, out, warn, images) {
     if (!L.enabled || L.guideLayer || L.nullLayer) return;
     try { if (L.isTrackMatte) return; } catch (e0) {}
@@ -2539,10 +2576,20 @@ var LayerBoatCore = (function () {
       var w = L.source.width, h = L.source.height;
       out.push({ kind: 'vector', name: L.name, paths: [rectPath([w, h], [w / 2, h / 2], 0, m)], fill: col255(L.source.mainSource.color), fillOpacity: 1, opacity: op });
     } else if (L.source && L.source.mainSource instanceof FileSource) {
-      var f = L.source.mainSource.file;
-      if (!f || !/\.(png|jpe?g|gif)$/i.test(f.name)) { warn['Video and other footage is left out.'] = true; return; }
-      var key = f.fsName;
-      if (!images[key]) { f.encoding = 'BINARY'; f.open('r'); images[key] = base64Of(f.read()); f.close(); }
+      var f = L.source.mainSource.file, key;
+      if (f && /\.(png|jpe?g|gif)$/i.test(f.name)) {
+        key = f.fsName;
+        if (!images[key]) { f.encoding = 'BINARY'; f.open('r'); images[key] = base64Of(f.read()); f.close(); }
+      } else {
+        // Photoshop layers, TIFFs, vector files and video frames: After Effects draws
+        // them to a PNG first, so they arrive as images
+        key = 'footage-' + L.source.id + '.png';
+        if (!images[key]) {
+          var png = footageToPng(L.source);
+          if (!png) { warn['Some footage could not be sent.'] = true; return; }
+          images[key] = png;
+        }
+      }
       var o2 = mApply(m, [0, 0]), u2 = mVec(m, [1, 0]), v2 = mVec(m, [0, 1]);
       out.push({ kind: 'image', name: L.name, image: key, x: o2[0], y: o2[1], width: L.source.width * Math.sqrt(u2[0] * u2[0] + u2[1] * u2[1]),
         height: L.source.height * Math.sqrt(v2[0] * v2[0] + v2[1] * v2[1]), rotation: Math.atan2(u2[1], u2[0]) * 180 / Math.PI, opacity: op });
@@ -2757,6 +2804,19 @@ var LayerBoatCore = (function () {
       box.close();
     } catch (eW) {}
   }
+  // The copy of an app that is actually running. With two years installed, a plain
+  // name means the newest one, which may not be the one that is open.
+  function runningTarget(name) {
+    if (typeof BridgeTalk === 'undefined') return null;
+    try { if (BridgeTalk.isRunning(name)) return name; } catch (e0) {}
+    for (var v = 40; v >= 20; v--) {
+      var spec = null;
+      try { spec = BridgeTalk.getSpecifier(name, String(v)); } catch (e1) {}
+      if (!spec) continue;
+      try { if (BridgeTalk.isRunning(spec)) return spec; } catch (e2) {}
+    }
+    return null;
+  }
   var AI_IMPORT_SRC = null;
   function setIllustratorImportSource(src) { AI_IMPORT_SRC = src; }
   function sendToIllustrator() {
@@ -2764,7 +2824,7 @@ var LayerBoatCore = (function () {
     if (!comp) return 'Open a comp first.';
     if (typeof BridgeTalk === 'undefined') return 'This version of After Effects cannot talk to Illustrator.';
     if (!AI_IMPORT_SRC) return 'The Illustrator part of LayerBoat is missing. Run the installer again.';
-    if (!BridgeTalk.isRunning('illustrator')) return 'Open Illustrator first.';
+    if (!runningTarget('illustrator')) return 'Open Illustrator first.';
     var warn = {}, images = {}, layers = [];
     exportComp(comp, layers, warn, images, selectionOnly(comp));
     if (!layers.length) return 'Nothing in this comp can go to Illustrator. Shape, text, solid, image and precomp layers can.';
@@ -2779,7 +2839,7 @@ var LayerBoatCore = (function () {
     var notes = [];
     for (var k in warn) if (warn.hasOwnProperty(k)) notes.push(k.split('Figma').join('Illustrator'));
     var bt = new BridgeTalk();
-    bt.target = 'illustrator';
+    bt.target = runningTarget('illustrator') || 'illustrator';
     bt.body = AI_IMPORT_SRC + '\nLayerBoatAI_import({ wait: 0 });';
     // Illustrator's answer is shown in the panel through the live inbox
     bt.onResult = function (m) {
@@ -2789,7 +2849,7 @@ var LayerBoatCore = (function () {
       else if (b.indexOf('ERR ') === 0) panelMessage('Illustrator could not bring it in: ' + b.substring(4));
     };
     bt.onError = function (m) { log('illustrator import error: ' + m.body); panelMessage('Illustrator could not bring it in: ' + m.body); };
-    try { BridgeTalk.bringToFront('illustrator'); } catch (eB) {}
+    try { BridgeTalk.bringToFront(runningTarget('illustrator') || 'illustrator'); } catch (eB) {}
     bt.send();
     return 'Sent ' + layers.length + ' layers to Illustrator.' + (notes.length ? ' ' + notes.join(' ') : '');
   }
@@ -2805,7 +2865,7 @@ var LayerBoatCore = (function () {
   function fromIllustrator() {
     if (typeof BridgeTalk === 'undefined') return 'This version of After Effects cannot talk to Illustrator.';
     if (!AI_SRC) return 'The Illustrator part of LayerBoat is missing. Run the installer again.';
-    if (!BridgeTalk.isRunning('illustrator')) return 'Open Illustrator with your artwork first.';
+    if (!runningTarget('illustrator')) return 'Open Illustrator with your artwork first.';
     var status = '';
     try { status = BridgeTalk.getStatus('illustrator'); } catch (eS) {}
     if (status === 'BUSY') return 'Illustrator is busy. Try again when it is idle.';
@@ -2816,9 +2876,9 @@ var LayerBoatCore = (function () {
     var aiOpts = { post: true, returnTo: aiFront ? 'aftereffects' : null };
     if (HOME && Folder(HOME + '/dev/dumps').exists) { aiOpts.log = HOME + '/dev/dumps/ai-log.txt'; aiOpts.dump = HOME + '/dev/dumps/ai-payload.json'; }
     var bt = new BridgeTalk();
-    bt.target = 'illustrator';
+    bt.target = runningTarget('illustrator') || 'illustrator';
     bt.body = AI_SRC + '\nLayerBoatAI_export(' + JSON.stringify(aiOpts) + ');';
-    if (aiFront) { try { BridgeTalk.bringToFront('illustrator'); } catch (eB) {} }
+    if (aiFront) { try { BridgeTalk.bringToFront(runningTarget('illustrator') || 'illustrator'); } catch (eB) {} }
     // a script error in Illustrator comes back here, and is shown in the panel like any message
     bt.onError = function (m) {
       log('illustrator error: ' + m.body);
@@ -2863,11 +2923,11 @@ var LayerBoatCore = (function () {
     if (!comp) return 'Open a comp and select a path, fill or stroke on a shape layer first.';
     var targets = updateTargets(comp);
     if (!targets.length) return 'Select a path, fill or stroke on a shape layer first. Twirl the layer open to pick one.';
-    if (typeof BridgeTalk === 'undefined' || !BridgeTalk.isRunning('illustrator')) return 'Open Illustrator and select a shape there first.';
+    if (typeof BridgeTalk === 'undefined' || !runningTarget('illustrator')) return 'Open Illustrator and select a shape there first.';
     if (!AI_SRC) return 'The Illustrator part of LayerBoat is missing. Run the installer again.';
     $.global.__bridgeUpdate = { comp: comp, targets: targets, time: comp.time };
     var bt = new BridgeTalk();
-    bt.target = 'illustrator';
+    bt.target = runningTarget('illustrator') || 'illustrator';
     bt.body = AI_SRC + '\nLayerBoatAI_pick();';
     bt.send();
     return 'Asked Illustrator for the selected shape.';
@@ -2876,13 +2936,13 @@ var LayerBoatCore = (function () {
   // The selection in Illustrator, or its active artboard, comes in as one image layer,
   // in the open comp or in a new comp the size of the artboard.
   function rasterizeFromIllustrator() {
-    if (typeof BridgeTalk === 'undefined' || !BridgeTalk.isRunning('illustrator')) return 'Open Illustrator with your artwork first.';
+    if (typeof BridgeTalk === 'undefined' || !runningTarget('illustrator')) return 'Open Illustrator with your artwork first.';
     if (!AI_SRC) return 'The Illustrator part of LayerBoat is missing. Run the installer again.';
     var bt = new BridgeTalk();
-    bt.target = 'illustrator';
+    bt.target = runningTarget('illustrator') || 'illustrator';
     bt.body = AI_SRC + '\nLayerBoatAI_rasterize();';
     // Illustrator works at full speed only in front; it hands the screen back when done
-    try { BridgeTalk.bringToFront('illustrator'); } catch (eB) {}
+    try { BridgeTalk.bringToFront(runningTarget('illustrator') || 'illustrator'); } catch (eB) {}
     bt.send();
     return 'Asked Illustrator for an image of the selection.';
   }
@@ -3120,6 +3180,23 @@ var LayerBoatCore = (function () {
     return false;
   }
 
+  // Builds artwork Illustrator left in the inbox, for when the panel is not open to
+  // pick it up. Illustrator calls this through BridgeTalk. Uses the panel's saved options.
+  function buildInbox() {
+    var inbox = new File(Folder.userData.fsName + '/LayerBoat/incoming-ai.json');
+    if (!inbox.exists) return 'NONE';
+    inbox.encoding = 'UTF-8';
+    if (!inbox.open('r')) return 'ERR could not read the artwork';
+    var txt = inbox.read(); inbox.close(); inbox.remove();
+    var data = parseData(txt, true);
+    if (!data) return 'ERR the artwork could not be read';
+    if (data.update) return 'OK ' + applyUpdate(data.update);
+    if (data.raster) return 'OK ' + placeRaster(data.raster);
+    if (!(data.layers && data.layers.length)) return 'OK ' + (data.message || '');
+    function opt(key, dflt) { try { if (app.settings.haveSetting('LayerBoat', key)) return app.settings.getSetting('LayerBoat', key) === '1'; } catch (e) {} return dflt; }
+    build(data, { intoActive: opt('intoActive', false), nulls: opt('nulls', true), combine: opt('combine', true), update: opt('update', true), centerAnchors: opt('centre', true) });
+    return 'OK ' + (LayerBoatCore.lastStatus || 'Done.');
+  }
   function listen(onData, onStatus) {
     var G = $.global;
     if (typeof Socket === 'undefined') { onStatus('Live mode is not available here. Use Copy and Paste.'); return false; }
@@ -3127,7 +3204,10 @@ var LayerBoatCore = (function () {
     G.__figmaBridgeLive = false;
     try { if (G.__figmaBridgeTask) app.cancelTask(G.__figmaBridgeTask); } catch (eC) {}
     G.__figmaBridgeTask = null;
-    if (!relayRunning() && !startRelay()) { onStatus('Could not start the LayerBoat relay. Use Copy and Paste.'); return false; }
+    // Illustrator hands artwork over through a file, so live mode keeps going for it
+    // even when the helper Figma talks to will not start
+    var relayOk = relayRunning() || startRelay();
+    G.__figmaBridgeRelayTry = new Date().getTime();
     G.__figmaBridgeOnData = onData;
     G.__figmaBridgeOnStatus = onStatus;
     // always re-arm, since After Effects can drop scheduled tasks
@@ -3154,7 +3234,11 @@ var LayerBoatCore = (function () {
       } catch (eI) { log('inbox error ' + errText(eI)); }
       if (!data) try {
         var r = httpGet('/next');
-        if (!r) { if (!relayRunning()) startRelay(); }
+        if (!r) {
+          // try the helper again now and then, not on every poll
+          var nowT = new Date().getTime();
+          if (nowT - (G.__figmaBridgeRelayTry || 0) > 10000) { G.__figmaBridgeRelayTry = nowT; if (!relayRunning()) startRelay(); }
+        }
         else if (r.status === 200 && r.body) {
           log('live: received ' + r.body.length + ' chars');
           data = parseData(r.body);
@@ -3169,7 +3253,7 @@ var LayerBoatCore = (function () {
       }
     };
     G.__figmaBridgeTask = app.scheduleTask('$.global.__figmaBridgePoll()', 400, false);
-    onStatus('Live. Click Send in the Figma plugin.');
+    onStatus(relayOk ? 'Live. Click Send in the Figma plugin.' : 'Live for Illustrator. The helper Figma needs did not start, so use Copy and Paste for Figma for now.');
     log('live: polling relay');
     return true;
   }
@@ -3256,10 +3340,10 @@ var LayerBoatCore = (function () {
     try { if (comp) comp.remove(); } catch (eC) {}
     // Illustrator, when it is open
     var aiUp = false;
-    try { aiUp = BridgeTalk.isRunning('illustrator'); } catch (eI) {}
+    try { aiUp = !!runningTarget('illustrator'); } catch (eI) {}
     if (aiUp) {
       var answer = null, bt = new BridgeTalk();
-      bt.target = 'illustrator';
+      bt.target = runningTarget('illustrator') || 'illustrator';
       bt.body = '"Illustrator " + app.version';
       bt.onResult = function (m) { answer = m.body; };
       bt.onError = function (m) { answer = 'ERR ' + m.body; };
@@ -3271,5 +3355,5 @@ var LayerBoatCore = (function () {
     return lines.join('\n');
   }
 
-  return { selfCheck: selfCheck, errText: errText, fromIllustrator: fromIllustrator, updateFromIllustrator: updateFromIllustrator, applyUpdate: applyUpdate, rasterizeFromIllustrator: rasterizeFromIllustrator, placeRaster: placeRaster, setIllustratorSource: setIllustratorSource, setIllustratorImportSource: setIllustratorImportSource, sendToIllustrator: sendToIllustrator, sendToFigma: sendToFigma, selectGroup: selectGroup, groupToPrecomp: groupToPrecomp, releaseGroup: releaseGroup, toggleHelpers: toggleHelpers, run: run, build: build, listen: listen, stopListening: stopListening, setHome: setHome, VERSION: VERSION, lastStatus: '', setLog: setLog, log: log, canUseSystem: scriptsCanUseSystem };
+  return { buildInbox: buildInbox, selfCheck: selfCheck, errText: errText, fromIllustrator: fromIllustrator, updateFromIllustrator: updateFromIllustrator, applyUpdate: applyUpdate, rasterizeFromIllustrator: rasterizeFromIllustrator, placeRaster: placeRaster, setIllustratorSource: setIllustratorSource, setIllustratorImportSource: setIllustratorImportSource, sendToIllustrator: sendToIllustrator, sendToFigma: sendToFigma, selectGroup: selectGroup, groupToPrecomp: groupToPrecomp, releaseGroup: releaseGroup, toggleHelpers: toggleHelpers, run: run, build: build, listen: listen, stopListening: stopListening, setHome: setHome, VERSION: VERSION, lastStatus: '', setLog: setLog, log: log, canUseSystem: scriptsCanUseSystem };
 })();

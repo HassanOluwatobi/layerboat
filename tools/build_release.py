@@ -26,13 +26,36 @@ relay_start = (
     "}\n")
 # The three actions, each giving back a message for the person, or '' when all went well
 actions = (
+    "function bridgeAETarget() {\n"
+    "  if (typeof BridgeTalk === 'undefined') return null;\n"
+    "  try { if (BridgeTalk.isRunning('aftereffects')) return 'aftereffects'; } catch (e0) {}\n"
+    "  for (var v = 40; v >= 20; v--) {\n"
+    "    var spec = null;\n"
+    "    try { spec = BridgeTalk.getSpecifier('aftereffects', String(v)); } catch (e1) {}\n"
+    "    if (spec) { try { if (BridgeTalk.isRunning(spec)) return spec; } catch (e2) {} }\n"
+    "  }\n"
+    "  return null;\n"
+    "}\n"
+    "function bridgeAskAE() {\n"
+    "  var spec = bridgeAETarget();\n"
+    "  if (!spec || !new File(Folder.userData.fsName + '/LayerBoat/layerboat-core.jsx').exists) return;\n"
+    "  try {\n"
+    "    var bt = new BridgeTalk();\n"
+    "    bt.target = spec;\n"
+    "    bt.body = \"$.evalFile(new File(Folder.userData.fsName + '/LayerBoat/layerboat-core.jsx')); LayerBoatCore.buildInbox();\";\n"
+    "    bt.send();\n"
+    "  } catch (e) {}\n"
+    "}\n"
     "function bridgeSendToAE() {\n"
     "  var r = LayerBoatAI_export({ post: true });\n"
     "  if (String(r).indexOf('ERR') === 0) return String(r).substring(4);\n"
-    "  // the LayerBoat panel picks the artwork up within a second; if it does not, say why\n"
+    "  // the LayerBoat panel picks the artwork up within a second. When it is closed,\n"
+    "  // After Effects is asked to build it directly.\n"
     "  var inbox = new File(Folder.userData.fsName + '/LayerBoat/incoming-ai.json');\n"
-    "  for (var i = 0; i < 32 && inbox.exists; i++) $.sleep(250);\n"
-    "  if (inbox.exists) return 'The artwork is ready, but After Effects has not picked it up yet. Open the LayerBoat panel in After Effects and tick Receive live. If After Effects is showing its Home screen, close it. The artwork comes in as soon as both are done.';\n"
+    "  for (var i = 0; i < 6 && inbox.exists; i++) $.sleep(250);\n"
+    "  if (inbox.exists) bridgeAskAE();\n"
+    "  for (var j = 0; j < 40 && inbox.exists; j++) $.sleep(250);\n"
+    "  if (inbox.exists) return bridgeAETarget() ? 'The artwork is ready, but After Effects has not picked it up. If After Effects is showing its Home screen or a dialog, close it, then send again.' : 'Open After Effects, then send again.';\n"
     "  return '';\n"
     "}\n"
     "function bridgeSendToFigma() {\n"
@@ -76,6 +99,8 @@ open(os.path.join(out, 'Illustrator', 'LayerBoat Panel.jsx'), 'w', encoding='utf
 open(os.path.join(out, 'Illustrator', 'LayerBoat actions.jsx'), 'w', encoding='utf-8').write(
     '// LayerBoat for Illustrator: the actions the LayerBoat panel runs. Open the panel, not this file.\n' + common)
 open(os.path.join(out, 'LayerBoat.jsx'), 'w', encoding='utf-8').write(panel)
+os.makedirs(os.path.join(out, 'support'), exist_ok=True)
+open(os.path.join(out, 'support', 'layerboat-core.jsx'), 'w', encoding='utf-8').write('// LayerBoat: the builder After Effects runs when Illustrator sends artwork with the panel closed.\n' + core)
 check = open(os.path.join(rel, 'check-template.jsx'), encoding='utf-8').read().replace('/*@@CORE@@*/', core)
 open(os.path.join(out, 'LayerBoat check.jsx'), 'w', encoding='utf-8').write(check)
 for b in ('layerboat-helper-arm64', 'layerboat-helper-amd64', 'layerboat-helper-windows-amd64.exe', 'layerboat-helper-windows-arm64.exe'):

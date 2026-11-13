@@ -18,112 +18,129 @@ function LayerBoatAI_import(opts) {
   if (!drop.open('r')) return 'ERR LayerBoat could not read what Figma sent.';
   var text = drop.read(); drop.close();
 
-  // the first line names the frame
-  var name = 'From Figma', id = '';
-  var head = '<!-- bridge:';
-  if (text.indexOf(head) === 0) {
-    var end = text.indexOf(' -->');
-    var parts = text.substring(head.length, end).split(':');
-    try { name = decodeURIComponent(parts[0]) || name; } catch (e1) {}
-    try { id = decodeURIComponent(parts[1] || ''); } catch (e2) {}
-    text = text.substring(end + 4);
-  }
-  var size = svgSize(text);
-  if (!size) return 'ERR What Figma sent is not a drawing LayerBoat can read.';
-
-  // Illustrator imports from a file, named after the frame so its group is too
-  var safe = '';
-  for (var c = 0; c < name.length && safe.length < 60; c++) {
-    var code = name.charCodeAt(c);
-    safe += (code < 32 || '/:*?"<>|'.indexOf(name.charAt(c)) !== -1 || code === 92) ? '-' : name.charAt(c);
-  }
-  var tmp = new File(Folder.temp.fsName + '/' + (safe || 'From Figma') + '.svg');
-  tmp.encoding = 'UTF-8';
-  if (!tmp.open('w')) return 'ERR LayerBoat could not write its file.';
-  tmp.write(text); tmp.close();
   try { drop.remove(); } catch (e3) {}
-
-  // Illustrator refuses to read or set its coordinate system while no document is open
-  var oldCoords = null, g = null, ab = null, nd = null, note = '';
-  function useDocCoords() {
-    try {
-      if (oldCoords === null) oldCoords = app.coordinateSystem;
-      app.coordinateSystem = CoordinateSystem.DOCUMENTCOORDINATESYSTEM;
-    } catch (eC) {}
+  // several frames sent together come as several drawings, one artboard each
+  var pieces = text.split('<!-' + '- bridge-next -' + '->');
+  var done = [], fails = [];
+  for (var pi = 0; pi < pieces.length; pi++) {
+    var piece = pieces[pi];
+    while (piece.length && piece.charCodeAt(0) <= 32) piece = piece.substring(1);
+    if (!piece.length) continue;
+    var r1 = String(importOne(piece));
+    if (r1.indexOf('OK ') === 0) done.push(r1.substring(3)); else fails.push(r1.substring(4));
   }
-  try {
-    if (app.documents.length) useDocCoords();
-    var doc = (!app.documents.length || opts.newDocument) ? null : app.activeDocument, rect = null;
-    if (doc) {
-      // a new artboard the size of the frame: to the right of the others, or below them
-      // when the canvas has no room left there
-      var right = -Infinity, top = 0, left = Infinity, bottom = Infinity;
-      for (var a = 0; a < doc.artboards.length; a++) {
-        var ar = doc.artboards[a].artboardRect;
-        if (ar[2] > right) { right = ar[2]; top = ar[1]; }
-        if (ar[0] < left) left = ar[0];
-        if (ar[3] < bottom) bottom = ar[3];
-      }
-      var spots = [[right + 100, top], [left, bottom - 100]];
-      for (var sp = 0; sp < spots.length && !ab; sp++) {
-        rect = [spots[sp][0], spots[sp][1], spots[sp][0] + size[0], spots[sp][1] - size[1]];
-        try { ab = doc.artboards.add(rect); } catch (eAb) { ab = null; }
-      }
-      if (!ab) { doc = null; note = ' (in a new document, as the open one has no room left on its canvas)'; }
+  if (!done.length) return 'ERR ' + (fails[0] || 'Nothing came in.');
+  return 'OK ' + done.join(', ') + (fails.length ? ' (' + fails.length + ' could not come in: ' + fails[0] + ')' : '');
+
+  // one drawing, onto a new artboard, or a new document when none is open
+  function importOne(text) {
+    // the first line names the frame
+    var name = 'From Figma', id = '';
+    var head = '<!-- bridge:';
+    if (text.indexOf(head) === 0) {
+      var end = text.indexOf(' -->');
+      var parts = text.substring(head.length, end).split(':');
+      try { name = decodeURIComponent(parts[0]) || name; } catch (e1) {}
+      try { id = decodeURIComponent(parts[1] || ''); } catch (e2) {}
+      text = text.substring(end + 4);
     }
-    if (!doc) {
-      // a new Illustrator document the size of the frame
-      nd = app.documents.add(DocumentColorSpace.RGB, size[0], size[1]);
-      doc = nd;
-      useDocCoords();
-      ab = doc.artboards[0];
-      rect = ab.artboardRect;
+    var size = svgSize(text);
+    if (!size) return 'ERR What Figma sent is not a drawing LayerBoat can read.';
+
+    // Illustrator imports from a file, named after the frame so its group is too
+    var safe = '';
+    for (var c = 0; c < name.length && safe.length < 60; c++) {
+      var code = name.charCodeAt(c);
+      safe += (code < 32 || '/:*?"<>|'.indexOf(name.charAt(c)) !== -1 || code === 92) ? '-' : name.charAt(c);
     }
-    try { ab.name = name; } catch (e5) {}
-    g = doc.groupItems.createFromFile(tmp);
-    g.name = name;
-    removeDefinitions(g);
-    // Figma clips the frame to its own size, so that clipping path marks where the
-    // frame's corner is. It is lined up with the artboard's corner.
-    var anchor = g;
-    for (var c2 = 0; c2 < g.pageItems.length && anchor === g; c2++) {
-      var it2 = g.pageItems[c2];
-      if (it2.parent !== g || it2.typename !== 'GroupItem' || !it2.clipped) continue;
-      for (var c3 = 0; c3 < it2.pageItems.length; c3++) {
-        var cp = it2.pageItems[c3];
-        if (cp.parent !== it2 || !(cp.typename === 'PathItem' && cp.clipping)) continue;
-        var gb2 = cp.geometricBounds;
-        if (Math.abs((gb2[2] - gb2[0]) - size[0]) < 1 && Math.abs((gb2[1] - gb2[3]) - size[1]) < 1) { anchor = cp; break; }
-      }
-    }
-    var ap = anchor.position;
-    g.translate(rect[0] - ap[0], rect[1] - ap[1]);
-    // drawings from After Effects carry their real layer names beside short ids,
-    // and their text as a note, which is made here as real Illustrator text
-    var real = realNames(text);
-    var texts = textNote(text);
-    if (texts) note += placeTexts(doc, g, texts, real || {});
-    if (real) renameAll(g, real);
-    else cleanNames(g.pageItems);
-    if (!nd) {
-      doc.artboards.setActiveArtboardIndex(doc.artboards.length - 1);
-      // the window moves to the new artboard, so the drawing is in view
+    var tmp = new File(Folder.temp.fsName + '/' + (safe || 'From Figma') + '.svg');
+    tmp.encoding = 'UTF-8';
+    if (!tmp.open('w')) return 'ERR LayerBoat could not write its file.';
+    tmp.write(text); tmp.close();
+
+    // Illustrator refuses to read or set its coordinate system while no document is open
+    var oldCoords = null, g = null, ab = null, nd = null, note = '';
+    function useDocCoords() {
       try {
-        var vw = doc.views[0], vb = vw.bounds, aw = rect[2] - rect[0], ah = rect[1] - rect[3];
-        var fit = Math.min((vb[2] - vb[0]) / aw, (vb[1] - vb[3]) / ah) * 0.9;
-        if (fit > 0 && isFinite(fit)) vw.zoom = vw.zoom * fit;
-        vw.centerPoint = [(rect[0] + rect[2]) / 2, (rect[1] + rect[3]) / 2];
-      } catch (eV) {}
+        if (oldCoords === null) oldCoords = app.coordinateSystem;
+        app.coordinateSystem = CoordinateSystem.DOCUMENTCOORDINATESYSTEM;
+      } catch (eC) {}
     }
-    try { doc.selection = null; g.selected = true; } catch (e6) {}
-    return 'OK ' + name + note;
-  } catch (err) {
-    // a failed import leaves nothing half made behind
-    try { if (nd) nd.close(SaveOptions.DONOTSAVECHANGES); else { if (g) g.remove(); if (ab) ab.remove(); } } catch (eG) {}
-    return 'ERR ' + err + (err.line ? ' (line ' + err.line + ')' : '');
-  } finally {
-    try { if (oldCoords !== null) app.coordinateSystem = oldCoords; } catch (eR) {}
-    try { tmp.remove(); } catch (e7) {}
+    try {
+      if (app.documents.length) useDocCoords();
+      var doc = (!app.documents.length || opts.newDocument) ? null : app.activeDocument, rect = null;
+      if (doc) {
+        // a new artboard the size of the frame: to the right of the others, or below them
+        // when the canvas has no room left there
+        var right = -Infinity, top = 0, left = Infinity, bottom = Infinity;
+        for (var a = 0; a < doc.artboards.length; a++) {
+          var ar = doc.artboards[a].artboardRect;
+          if (ar[2] > right) { right = ar[2]; top = ar[1]; }
+          if (ar[0] < left) left = ar[0];
+          if (ar[3] < bottom) bottom = ar[3];
+        }
+        var spots = [[right + 100, top], [left, bottom - 100]];
+        for (var sp = 0; sp < spots.length && !ab; sp++) {
+          rect = [spots[sp][0], spots[sp][1], spots[sp][0] + size[0], spots[sp][1] - size[1]];
+          try { ab = doc.artboards.add(rect); } catch (eAb) { ab = null; }
+        }
+        if (!ab) { doc = null; note = ' (in a new document, as the open one has no room left on its canvas)'; }
+      }
+      if (!doc) {
+        // a new Illustrator document the size of the frame
+        nd = app.documents.add(DocumentColorSpace.RGB, size[0], size[1]);
+        doc = nd;
+        useDocCoords();
+        ab = doc.artboards[0];
+        rect = ab.artboardRect;
+      }
+      try { ab.name = name; } catch (e5) {}
+      g = doc.groupItems.createFromFile(tmp);
+      g.name = name;
+      removeDefinitions(g);
+      // Figma clips the frame to its own size, so that clipping path marks where the
+      // frame's corner is. It is lined up with the artboard's corner.
+      var anchor = g;
+      for (var c2 = 0; c2 < g.pageItems.length && anchor === g; c2++) {
+        var it2 = g.pageItems[c2];
+        if (it2.parent !== g || it2.typename !== 'GroupItem' || !it2.clipped) continue;
+        for (var c3 = 0; c3 < it2.pageItems.length; c3++) {
+          var cp = it2.pageItems[c3];
+          if (cp.parent !== it2 || !(cp.typename === 'PathItem' && cp.clipping)) continue;
+          var gb2 = cp.geometricBounds;
+          if (Math.abs((gb2[2] - gb2[0]) - size[0]) < 1 && Math.abs((gb2[1] - gb2[3]) - size[1]) < 1) { anchor = cp; break; }
+        }
+      }
+      var ap = anchor.position;
+      g.translate(rect[0] - ap[0], rect[1] - ap[1]);
+      // drawings from After Effects carry their real layer names beside short ids,
+      // and their text as a note, which is made here as real Illustrator text
+      var real = realNames(text);
+      var texts = textNote(text);
+      if (texts) note += placeTexts(doc, g, texts, real || {});
+      if (real) renameAll(g, real);
+      else cleanNames(g.pageItems);
+      if (!nd) {
+        doc.artboards.setActiveArtboardIndex(doc.artboards.length - 1);
+        // the window moves to the new artboard, so the drawing is in view
+        try {
+          var vw = doc.views[0], vb = vw.bounds, aw = rect[2] - rect[0], ah = rect[1] - rect[3];
+          var fit = Math.min((vb[2] - vb[0]) / aw, (vb[1] - vb[3]) / ah) * 0.9;
+          if (fit > 0 && isFinite(fit)) vw.zoom = vw.zoom * fit;
+          vw.centerPoint = [(rect[0] + rect[2]) / 2, (rect[1] + rect[3]) / 2];
+        } catch (eV) {}
+      }
+      try { doc.selection = null; g.selected = true; } catch (e6) {}
+      return 'OK ' + name + note;
+    } catch (err) {
+      // a failed import leaves nothing half made behind
+      try { if (nd) nd.close(SaveOptions.DONOTSAVECHANGES); else { if (g) g.remove(); if (ab) ab.remove(); } } catch (eG) {}
+      return 'ERR ' + err + (err.line ? ' (line ' + err.line + ')' : '');
+    } finally {
+      try { if (oldCoords !== null) app.coordinateSystem = oldCoords; } catch (eR) {}
+      try { tmp.remove(); } catch (e7) {}
+    }
+
   }
 
   // the width and height on the svg element

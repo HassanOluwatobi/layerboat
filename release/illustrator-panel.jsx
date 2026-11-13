@@ -45,7 +45,8 @@
       if (path && typeof BridgeTalk !== 'undefined') {
         try {
           var bt = new BridgeTalk();
-          bt.target = 'illustrator';
+          // this copy of Illustrator, even when another year is installed too
+          bt.target = BridgeTalk.appSpecifier || 'illustrator';
           bt.body = "$.evalFile(new File('" + path + "')); var __m = ''; try { __m = " + call + "; } catch (e) { __m = 'Something went wrong: ' + e; } __m || '';";
           bt.onResult = function (r) { done(r.body); };
           bt.onError = function (r) { done('Something went wrong: ' + r.body); };

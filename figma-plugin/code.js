@@ -1420,9 +1420,28 @@ async function receiveFromAE(text) {
 // ---------- Figma to Illustrator ----------
 // Illustrator reads SVG well, so the selection goes as SVG with text kept as text
 // and layer names kept as ids. A comment at the top carries the frame's name.
+function isFrameLike(n) { return n.type === 'FRAME' || n.type === 'COMPONENT' || n.type === 'INSTANCE' || n.type === 'SECTION'; }
+// several whole frames go separately, so each gets its own artboard or comp
+function separateFrames(sel) {
+  if (sel.length < 2) return false;
+  for (var i = 0; i < sel.length; i++) if (!isFrameLike(sel[i]) || !sel[i].parent || sel[i].parent.type !== 'PAGE') return false;
+  return true;
+}
+// top to bottom, then left to right, the way people read a page of screens
+function readingOrder(sel) { return sel.slice().sort(function (a, b) { return (Math.round(a.y) - Math.round(b.y)) || (a.x - b.x); }); }
 async function svgForIllustrator() {
   var sel = figma.currentPage.selection;
   if (!sel.length) throw new Error('Select a frame or layers first.');
+  if (separateFrames(sel)) {
+    var parts = [], ordered = readingOrder(sel);
+    try {
+      for (var k = 0; k < ordered.length; k++) {
+        figma.currentPage.selection = [ordered[k]];
+        parts.push(await svgForIllustrator());
+      }
+    } finally { figma.currentPage.selection = sel; }
+    return parts.join(String.fromCharCode(10) + '<!-- bridge-next -->' + String.fromCharCode(10));
+  }
   var node = sel[0], name = node.name, made = null;
   if (sel.length > 1) {
     // several layers go together, in a group that is removed again straight away
@@ -1439,6 +1458,64 @@ async function svgForIllustrator() {
   } finally {
     if (made) { try { figma.ungroup(made); } catch (e) {} }
   }
+}
+
+async function makePayload(sel) {
+  imageJobs = [];
+  textJobs = [];
+  await loadFonts(sel);
+  var root, layers = [], compW, compH, name;
+  // identifies this frame or selection, so sending it again updates the same comp
+  var ids = [];
+  for (var si = 0; si < sel.length; si++) ids.push(sel[si].id);
+  var rootId = ids.sort().join(',');
+  if (sel.length === 1 && (sel[0].type === 'FRAME' || sel[0].type === 'COMPONENT' || sel[0].type === 'INSTANCE')) {
+    // a single frame becomes the comp itself
+    var f = sel[0];
+    var fInv = invert(f.absoluteTransform);
+    var g = groupData(f, fInv, true);
+    layers = g.children;
+    compW = f.width; compH = f.height; name = f.name;
+  } else {
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (var i = 0; i < sel.length; i++) {
+      var b = sel[i].absoluteBoundingBox;
+      if (!b) continue;
+      minX = Math.min(minX, b.x); minY = Math.min(minY, b.y);
+      maxX = Math.max(maxX, b.x + b.width); maxY = Math.max(maxY, b.y + b.height);
+    }
+    var inv = [[1, 0, -minX], [0, 1, -minY]];
+    for (var j = 0; j < sel.length; j++) {
+      var c = convert(sel[j], inv);
+      if (c) layers.push(c);
+    }
+    compW = maxX - minX; compH = maxY - minY;
+    name = sel.length === 1 ? sel[0].name : 'Figma selection';
+  }
+  var total = imageJobs.length + textJobs.length;
+  if (total) figma.ui.postMessage({ type: 'progress', text: 'Preparing ' + imageJobs.length + ' images and ' + textJobs.length + ' text layers...' });
+  for (var q = 0; q < imageJobs.length; q++) {
+    var job = imageJobs[q];
+    try {
+      if (job.kind === 'stroke') job.o.strokeImage = await exportStroke(job.node);
+      else if (job.kind === 'whole') job.o.image = await exportWhole(job.node);
+      else job.o.image = await exportFills(job.node);
+    } catch (e) { warn('One image could not be exported.'); }
+  }
+  for (var tq = 0; tq < textJobs.length; tq++) {
+    try { await textLayout(textJobs[tq].node, textJobs[tq].o); } catch (e2) {}
+    try { await glyphWidths(textJobs[tq].node, textJobs[tq].o); } catch (e3) {}
+  }
+  markMerges(layers, true);
+  return {
+    bridge: 'figma-to-ae',
+    version: 1,
+    name: name,
+    rootId: rootId,
+    width: Math.max(1, Math.round(compW)),
+    height: Math.max(1, Math.round(compH)),
+    layers: layers
+  };
 }
 
 figma.ui.onmessage = async function (msg) {
@@ -1458,72 +1535,32 @@ figma.ui.onmessage = async function (msg) {
   }
   if (msg.type !== 'copy' && msg.type !== 'send') return;
   warnings = {};
-  imageJobs = [];
-  textJobs = [];
   var sel = figma.currentPage.selection;
   if (!sel.length) {
     figma.ui.postMessage({ type: 'error', text: 'Select something first.' });
     return;
   }
   try {
-    await loadFonts(sel);
-    var root, layers = [], compW, compH, name;
-    // identifies this frame or selection, so sending it again updates the same comp
-    var ids = [];
-    for (var si = 0; si < sel.length; si++) ids.push(sel[si].id);
-    var rootId = ids.sort().join(',');
-    if (sel.length === 1 && (sel[0].type === 'FRAME' || sel[0].type === 'COMPONENT' || sel[0].type === 'INSTANCE')) {
-      // a single frame becomes the comp itself
-      var f = sel[0];
-      var fInv = invert(f.absoluteTransform);
-      var g = groupData(f, fInv, true);
-      layers = g.children;
-      compW = f.width; compH = f.height; name = f.name;
+    var payload, count = 0;
+    if (separateFrames(sel)) {
+      // each frame becomes its own comp
+      var subs = [], ordered = readingOrder(sel);
+      for (var fi = 0; fi < ordered.length; fi++) {
+        figma.ui.postMessage({ type: 'progress', text: 'Reading frame ' + (fi + 1) + ' of ' + ordered.length + '...' });
+        var sub = await makePayload([ordered[fi]]);
+        count += countLayers(sub.layers);
+        subs.push(sub);
+      }
+      payload = { bridge: 'figma-to-ae', version: 1, name: subs.length + ' frames', width: subs[0].width, height: subs[0].height, layers: [], multi: subs };
     } else {
-      var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-      for (var i = 0; i < sel.length; i++) {
-        var b = sel[i].absoluteBoundingBox;
-        if (!b) continue;
-        minX = Math.min(minX, b.x); minY = Math.min(minY, b.y);
-        maxX = Math.max(maxX, b.x + b.width); maxY = Math.max(maxY, b.y + b.height);
-      }
-      var inv = [[1, 0, -minX], [0, 1, -minY]];
-      for (var j = 0; j < sel.length; j++) {
-        var c = convert(sel[j], inv);
-        if (c) layers.push(c);
-      }
-      compW = maxX - minX; compH = maxY - minY;
-      name = sel.length === 1 ? sel[0].name : 'Figma selection';
+      payload = await makePayload(sel);
+      count = countLayers(payload.layers);
     }
-    var total = imageJobs.length + textJobs.length;
-    if (total) figma.ui.postMessage({ type: 'progress', text: 'Preparing ' + imageJobs.length + ' images and ' + textJobs.length + ' text layers...' });
-    for (var q = 0; q < imageJobs.length; q++) {
-      var job = imageJobs[q];
-      try {
-        if (job.kind === 'stroke') job.o.strokeImage = await exportStroke(job.node);
-        else if (job.kind === 'whole') job.o.image = await exportWhole(job.node);
-        else job.o.image = await exportFills(job.node);
-      } catch (e) { warn('One image could not be exported.'); }
-    }
-    for (var tq = 0; tq < textJobs.length; tq++) {
-      try { await textLayout(textJobs[tq].node, textJobs[tq].o); } catch (e2) {}
-      try { await glyphWidths(textJobs[tq].node, textJobs[tq].o); } catch (e3) {}
-    }
-    markMerges(layers, true);
-    var payload = {
-      bridge: 'figma-to-ae',
-      version: 1,
-      name: name,
-      rootId: rootId,
-      width: Math.max(1, Math.round(compW)),
-      height: Math.max(1, Math.round(compH)),
-      layers: layers
-    };
     figma.ui.postMessage({
       type: 'data',
       mode: msg.type,
       text: asciiJSON(payload),
-      count: countLayers(layers),
+      count: count,
       warnings: Object.keys(warnings)
     });
   } catch (err) {
