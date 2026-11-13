@@ -1,0 +1,275 @@
+<style>
+  /* Figma's own colours, so the plugin matches light and dark mode */
+  body { font: 12px Inter, system-ui, sans-serif; margin: 0; padding: 14px; color: var(--figma-color-text, #222); background: var(--figma-color-bg, #fff); }
+  button { width: 100%; padding: 10px; border: 0; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }
+  #send { background: var(--figma-color-bg-brand, #0d99ff); color: var(--figma-color-text-onbrand, #fff); }
+  #copy, #toai { background: var(--figma-color-bg-secondary, #f0f0f0); color: var(--figma-color-text, #222); margin-top: 8px; }
+  button:active { opacity: .8; }
+  button:disabled { opacity: .45; cursor: default; }
+  #conn { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; color: var(--figma-color-text-secondary, #555); }
+  #dot { width: 8px; height: 8px; border-radius: 50%; background: var(--figma-color-icon-tertiary, #bbb); }
+  #dot.on { background: var(--figma-color-icon-success, #14ae5c); }
+  #status { margin-top: 10px; line-height: 1.4; color: var(--figma-color-text-secondary, #555); min-height: 34px; }
+  #incoming { margin-top: 6px; line-height: 1.4; color: var(--figma-color-text-secondary, #555); }
+  .ok { color: var(--figma-color-text-success, #14ae5c) !important; }
+  .err { color: var(--figma-color-text-danger, #f24822) !important; }
+  textarea { position: absolute; left: -9999px; top: 0; }
+</style>
+<div id="conn"><span id="dot"></span><span id="connText">Looking for After Effects...</span></div>
+<button id="send">Send to After Effects</button>
+<button id="copy">Copy instead</button>
+<button id="toai">Send to Illustrator</button>
+<div id="status">Select layers or a frame.</div>
+<div id="incoming"></div>
+<textarea id="buf"></textarea>
+<script>
+  const URL_AE = 'http://localhost:7317/';
+  const statusEl = document.getElementById('status');
+  const dot = document.getElementById('dot');
+  const connText = document.getElementById('connText');
+  const sendBtn = document.getElementById('send');
+  let connected = false;
+
+  async function ping() {
+    let state = 'none';
+    try {
+      const r = await fetch(URL_AE + 'ping', { method: 'GET' });
+      const t = await r.text();
+      state = t.indexOf('ae-connected') >= 0 ? 'live' : 'relay';
+    } catch (e) { state = 'none'; }
+    connected = state === 'live';
+    dot.className = connected ? 'on' : '';
+    connText.textContent = state === 'live' ? 'After Effects is connected'
+      : state === 'relay' ? 'Ready for Illustrator. For After Effects, open the LayerBoat panel there.'
+      : 'After Effects not found. Open the LayerBoat panel there.';
+    sendBtn.disabled = !connected;
+  }
+  ping();
+  setInterval(ping, 3000);
+
+  document.getElementById('send').onclick = () => {
+    statusEl.className = '';
+    statusEl.textContent = 'Reading layers...';
+    parent.postMessage({ pluginMessage: { type: 'send' } }, '*');
+  };
+  document.getElementById('toai').onclick = () => {
+    statusEl.className = '';
+    statusEl.textContent = 'Reading layers...';
+    parent.postMessage({ pluginMessage: { type: 'toai' } }, '*');
+  };
+  // Illustrator scripts cannot listen for anything, so the drawing waits in a file
+  // until Bring in from Figma runs there
+  async function watchIllustrator() {
+    for (let i = 0; i < 240; i++) {
+      await new Promise(res => setTimeout(res, 500));
+      try {
+        const t = await (await fetch(URL_AE + 'status?to=ai')).text();
+        if (t.indexOf('taken') >= 0) { statusEl.className = 'ok'; statusEl.textContent = 'Illustrator brought it in.'; return; }
+      } catch (e) { return; }
+    }
+  }
+  document.getElementById('copy').onclick = () => {
+    statusEl.className = '';
+    statusEl.textContent = 'Reading layers...';
+    parent.postMessage({ pluginMessage: { type: 'copy' } }, '*');
+  };
+
+  // confirms that After Effects picked the layers up, so a missed send never
+  // goes unnoticed
+  async function watchPickup(count, extra) {
+    for (let i = 0; i < 24; i++) {
+      await new Promise(res => setTimeout(res, 500));
+      try {
+        const t = await (await fetch(URL_AE + 'status')).text();
+        if (t.indexOf('taken') >= 0) {
+          statusEl.className = 'ok';
+          statusEl.textContent = 'After Effects received ' + count + ' layers and is building them.' + extra;
+          return;
+        }
+      } catch (e) { break; }
+    }
+    statusEl.className = 'err';
+    statusEl.textContent = 'After Effects has not picked this up yet. Check that the LayerBoat panel is open, then click Send again.';
+  }
+
+  // layers sent from After Effects arrive here and are built on the canvas
+  const incoming = document.getElementById('incoming');
+  let receiving = false;
+  async function pollFigmaBox() {
+    if (receiving) return;
+    try {
+      const r = await fetch(URL_AE + 'next?for=figma');
+      if (r.status === 200) {
+        let text = await r.text();
+        if (text) {
+          receiving = true;
+          console.log('LayerBoat: received ' + text.length + ' characters');
+          text = splitIllustratorSvg(text);
+          incoming.className = '';
+          incoming.textContent = 'Building layers...';
+          parent.postMessage({ pluginMessage: { type: 'build', text: text } }, '*');
+        }
+      }
+    } catch (e) {
+      // a failure here must never leave the plugin waiting for good
+      receiving = false;
+      console.log('LayerBoat: receiving failed', e);
+    }
+  }
+  setInterval(pollFigmaBox, 1000);
+
+  // Illustrator sends its shapes as one SVG with a group per shape. The plugin
+  // itself cannot read SVG markup, so the groups are split apart here.
+  function splitIllustratorSvg(text) {
+    let data;
+    try { data = JSON.parse(text); } catch (e) { return text; }
+    if (data.source !== 'illustrator' || !data.svg) return text;
+    try {
+      const doc = new DOMParser().parseFromString(data.svg, 'image/svg+xml');
+      const root = doc.documentElement;
+      const ser = new XMLSerializer();
+      let shared = '';
+      for (let c = root.firstChild; c; c = c.nextSibling) if (c.nodeName === 'defs' || c.nodeName === 'style') shared += ser.serializeToString(c);
+      const open = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"' +
+        ' viewBox="0 0 ' + data.width + ' ' + data.height + '" width="' + data.width + '" height="' + data.height + '">';
+      const vb = (root.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+      // the export's own origin, in case the artboard does not start at 0, 0
+      const shift = vb.length === 4 && (vb[0] || vb[1]) ? ' transform="translate(' + (-vb[0]) + ' ' + (-vb[1]) + ')"' : '';
+      const svgs = {};
+      const all = root.getElementsByTagName('*');
+      for (let i = 0; i < all.length; i++) {
+        const el = all[i], m = /^bridge(\d+)(_\d+_)?$/.exec(el.getAttribute('id') || '');
+        if (!m || svgs['bridge' + m[1]]) continue;
+        svgs['bridge' + m[1]] = open + shared + '<g' + shift + '>' + ser.serializeToString(el) + '</g></svg>';
+      }
+      console.log('LayerBoat: split the SVG into ' + Object.keys(svgs).length + ' shapes');
+      data.svgs = svgs;
+      delete data.svg;
+      return JSON.stringify(data);
+    } catch (e) { return text; }
+  }
+
+  // Figma writes image fills as SVG patterns, which Illustrator does not read.
+  // Each one becomes a plain image, placed and cropped the way the pattern draws it.
+  // The SVG is drawn off screen for a moment so each shape can be measured.
+  function imagesForIllustrator(text) {
+    const cut = text.indexOf('<svg');
+    if (cut < 0 || text.indexOf('<pattern') < 0) return text;
+    const head = text.substring(0, cut);
+    const holder = document.createElement('div');
+    holder.style.cssText = 'position:absolute;left:-100000px;top:0;width:10px;height:10px;overflow:hidden';
+    holder.innerHTML = text.substring(cut);
+    document.body.appendChild(holder);
+    try {
+      const svg = holder.querySelector('svg');
+      const NS = 'http://www.w3.org/2000/svg', XL = 'http://www.w3.org/1999/xlink';
+      const hrefOf = el => el.getAttribute('href') || el.getAttributeNS(XL, 'href') || el.getAttribute('xlink:href') || '';
+      let n = 0, made = 0;
+      svg.querySelectorAll('[fill^="url(#"]').forEach(el => {
+        const id = el.getAttribute('fill').slice(5, -1);
+        const pat = svg.getElementById ? svg.getElementById(id) : svg.querySelector('#' + CSS.escape(id));
+        if (!pat || pat.nodeName.toLowerCase() !== 'pattern') return;
+        const use = pat.querySelector('use');
+        const img = use ? svg.querySelector('#' + CSS.escape(hrefOf(use).replace('#', ''))) : pat.querySelector('image');
+        if (!img) return;
+        const data = hrefOf(img);
+        const bb = el.getBBox();
+        // the pattern maps the image into the shape's box with a matrix, in units of that box
+        let m = [1, 0, 0, 1, 0, 0];
+        const tr = (use || img).getAttribute('transform') || '';
+        const mm = /matrix\(([^)]+)\)/.exec(tr);
+        if (mm) m = mm[1].trim().split(/[\s,]+/).map(Number);
+        else {
+          const sc = /scale\(([^)]+)\)/.exec(tr), tl = /translate\(([^)]+)\)/.exec(tr);
+          if (sc) { const v = sc[1].trim().split(/[\s,]+/).map(Number); m[0] = v[0]; m[3] = v.length > 1 ? v[1] : v[0]; }
+          if (tl) { const v = tl[1].trim().split(/[\s,]+/).map(Number); m[4] = v[0]; m[5] = v[1] || 0; }
+        }
+        const iw = parseFloat(img.getAttribute('width')) || 1, ih = parseFloat(img.getAttribute('height')) || 1;
+        const units = pat.getAttribute('patternContentUnits') === 'objectBoundingBox';
+        const sx = units ? bb.width : 1, sy = units ? bb.height : 1;
+        const x = bb.x + m[4] * sx, y = bb.y + m[5] * sy, w = m[0] * iw * sx, h = m[3] * ih * sy;
+        const clipId = 'bridgeimgclip' + (n++);
+        const clip = document.createElementNS(NS, 'clipPath');
+        clip.setAttribute('id', clipId);
+        const shape = el.cloneNode(true);
+        shape.removeAttribute('fill'); shape.removeAttribute('stroke'); shape.removeAttribute('transform');
+        clip.appendChild(shape);
+        const g = document.createElementNS(NS, 'g');
+        if (el.getAttribute('transform')) g.setAttribute('transform', el.getAttribute('transform'));
+        if (el.getAttribute('id')) g.setAttribute('id', el.getAttribute('id'));
+        const im = document.createElementNS(NS, 'image');
+        im.setAttribute('x', x); im.setAttribute('y', y); im.setAttribute('width', w); im.setAttribute('height', h);
+        im.setAttribute('preserveAspectRatio', 'none');
+        im.setAttributeNS(XL, 'xlink:href', data);
+        im.setAttribute('clip-path', 'url(#' + clipId + ')');
+        g.appendChild(clip); g.appendChild(im);
+        el.parentNode.insertBefore(g, el);
+        // a stroke on the same shape stays, drawn over the image
+        if (el.getAttribute('stroke') && el.getAttribute('stroke') !== 'none') { el.setAttribute('fill', 'none'); el.removeAttribute('id'); }
+        else el.remove();
+        made++;
+      });
+      console.log('LayerBoat: ' + made + ' image fills made into images for Illustrator');
+      return head + new XMLSerializer().serializeToString(svg);
+    } finally { holder.remove(); }
+  }
+
+  function note(msg) { return msg.warnings && msg.warnings.length ? ' Note: ' + msg.warnings.join(' ') : ''; }
+
+  onmessage = async (e) => {
+    const msg = e.data.pluginMessage;
+    if (!msg) return;
+    if (msg.type === 'error') {
+      statusEl.className = 'err';
+      statusEl.textContent = msg.text;
+      return;
+    }
+    if (msg.type === 'progress') { statusEl.className = ''; statusEl.textContent = msg.text; return; }
+    if (msg.type === 'built') {
+      console.log('LayerBoat: ' + msg.text);
+      receiving = false;
+      incoming.className = msg.ok ? 'ok' : 'err';
+      incoming.textContent = msg.text;
+      return;
+    }
+    if (msg.type === 'svg') {
+      statusEl.className = '';
+      statusEl.textContent = 'Sending to Illustrator...';
+      let body = msg.text;
+      try { body = imagesForIllustrator(msg.text); } catch (eImg) { console.log('LayerBoat: image fills left as they are', eImg); }
+      try {
+        const r = await fetch(URL_AE + 'send?to=ai', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: body });
+        if (!r.ok) throw new Error(await r.text());
+        statusEl.className = 'ok';
+        statusEl.textContent = 'Ready. In Illustrator, click Bring in from Figma in the LayerBoat panel.';
+        watchIllustrator();
+      } catch (err) {
+        statusEl.className = 'err';
+        statusEl.textContent = 'The LayerBoat helper is not running. In Illustrator, click Bring in from Figma in the LayerBoat panel, then click Send to Illustrator again.';
+      }
+      return;
+    }
+    if (msg.type !== 'data') return;
+    if (msg.mode === 'send') {
+      statusEl.textContent = 'Sending ' + msg.count + ' layers...';
+      try {
+        const r = await fetch(URL_AE + 'send', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: msg.text });
+        if (!r.ok) throw new Error(await r.text());
+        statusEl.className = 'ok';
+        statusEl.textContent = 'Sent ' + msg.count + ' layers.' + note(msg);
+        watchPickup(msg.count, note(msg));
+      } catch (err) {
+        statusEl.className = 'err';
+        statusEl.textContent = 'Could not reach After Effects. Use Copy instead.';
+      }
+      return;
+    }
+    const buf = document.getElementById('buf');
+    buf.value = msg.text;
+    buf.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    statusEl.className = ok ? 'ok' : 'err';
+    statusEl.textContent = ok ? 'Copied ' + msg.count + ' layers. Now click Paste in After Effects.' + note(msg) : 'Could not reach the clipboard. Try again.';
+  };
+</script>

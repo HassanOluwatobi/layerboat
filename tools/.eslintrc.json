@@ -1,0 +1,72 @@
+{
+  "root": true,
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
+  "env": {
+    "es6": true
+  },
+  "globals": {
+    "app": "readonly",
+    "File": "readonly",
+    "Folder": "readonly",
+    "Socket": "readonly",
+    "system": "readonly",
+    "$": "readonly",
+    "alert": "readonly",
+    "CompItem": "readonly",
+    "FolderItem": "readonly",
+    "Shape": "readonly",
+    "ImportOptions": "readonly",
+    "BlendingMode": "readonly",
+    "TrackMatteType": "readonly",
+    "ParagraphJustification": "readonly",
+    "AutoKernType": "readonly",
+    "PropertyType": "readonly",
+    "ShapeLayer": "readonly",
+    "TextLayer": "readonly",
+    "SolidSource": "readonly",
+    "FileSource": "readonly",
+    "Panel": "readonly",
+    "Window": "readonly",
+    "LayerBoatCore": "writable",
+    "figma": "readonly",
+    "__html__": "readonly",
+    "BridgeTalk": "readonly",
+    "CoordinateSystem": "readonly",
+    "ImageColorSpace": "readonly",
+    "ColorConvertPurpose": "readonly",
+    "GradientType": "readonly",
+    "TextType": "readonly",
+    "DocumentColorSpace": "readonly",
+    "ElementPlacement": "readonly",
+    "ExportOptionsPNG24": "readonly",
+    "ExportType": "readonly",
+    "SaveOptions": "readonly",
+    "BlendModes": "readonly",
+    "ImageCaptureOptions": "readonly",
+    "ExportOptionsSVG": "readonly",
+    "SVGFontType": "readonly",
+    "SVGCSSPropertyLocation": "readonly",
+    "SVGDocumentEncoding": "readonly",
+    "IllustratorSaveOptions": "readonly",
+    "RGBColor": "readonly",
+    "ImportAsType": "readonly",
+    "FootageItem": "readonly",
+    "SVGDTDVersion": "readonly",
+    "console": "readonly",
+    "NoColor": "readonly",
+    "Justification": "readonly",
+    "Transformation": "readonly"
+  },
+  "rules": {
+    "no-undef": "error",
+    "no-unused-vars": "off",
+    "no-redeclare": [
+      "error",
+      {
+        "builtinGlobals": false
+      }
+    ]
+  }
+}

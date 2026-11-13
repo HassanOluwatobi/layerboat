@@ -1,0 +1,8 @@
+# built by relay/build.sh and tools/build_release.py
+relay/layerboat-helper-*
+release/dist/
+tools/node_modules/
+# local development only
+dev/
+*.log
+.DS_Store
