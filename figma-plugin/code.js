@@ -31,7 +31,9 @@ function selSummary() {
   if (s.length === 1) return '\u201c' + s[0].name + '\u201d is ready to send.';
   return s.length + ' layers selected. They go across together.';
 }
-function postSel() { if (!busy) figma.ui.postMessage({ type: 'sel', text: selSummary() }); }
+// a selection LayerBoat restores itself is not news, so the result of a send stays on screen
+var quietUntil = 0;
+function postSel() { if (!busy && Date.now() > quietUntil) figma.ui.postMessage({ type: 'sel', text: selSummary() }); }
 figma.on('selectionchange', postSel);
 figma.on('currentpagechange', function () { dropScratch(); postSel(); });
 
@@ -1643,7 +1645,7 @@ figma.ui.onmessage = async function (msg) {
   try { await handle(msg); }
   finally {
     dropScratch();
-    try { var alive = keepSel.filter(function (n) { return !n.removed; }); var now = figma.currentPage.selection.map(function (n) { return n.id; }).join(','); if (alive.length === keepSel.length && msg.type !== 'build' && now !== alive.map(function (n) { return n.id; }).join(',')) figma.currentPage.selection = alive; } catch (eS) {}
+    try { var alive = keepSel.filter(function (n) { return !n.removed; }); var now = figma.currentPage.selection.map(function (n) { return n.id; }).join(','); if (alive.length === keepSel.length && msg.type !== 'build' && now !== alive.map(function (n) { return n.id; }).join(',')) { quietUntil = Date.now() + 1500; figma.currentPage.selection = alive; } } catch (eS) {}
     busy = false;
   }
 };
