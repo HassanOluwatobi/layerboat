@@ -1,9 +1,11 @@
 name: Release
 
-# Push a tag like v1.5 and this builds the download zip and publishes it as a release.
+# Every change to main builds the download zip. When the version is new, it is
+# published as a release. Bump the version in after-effects/layerboat-core.jsx to ship.
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -28,6 +30,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           zip=$(ls release/dist/*.zip | head -1)
-          gh release create "$GITHUB_REF_NAME" "$zip" \
-            --title "LayerBoat ${GITHUB_REF_NAME#v}" \
-            --notes-file release/NOTES.md
+          ver=$(basename "$zip" .zip | sed 's/^LayerBoat //')
+          if gh release view "v$ver" >/dev/null 2>&1; then
+            echo "v$ver is already released"; exit 0
+          fi
+          gh release create "v$ver" "$zip" --target "$GITHUB_SHA" \
+            --title "LayerBoat $ver" --notes-file release/NOTES.md
