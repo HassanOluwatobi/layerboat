@@ -21,7 +21,7 @@ What it does
 - Send the same frame again and the comp updates in place.
 
 How to use it
-1. Download LayerBoat from hassanoluwatobi.github.io/layerboat and run Install LayerBoat.jsx in After Effects with File > Scripts > Run Script File.
+1. Download LayerBoat from tobihassan.com/layerboat and run Install LayerBoat.jsx in After Effects with File > Scripts > Run Script File.
 2. In After Effects, open Window > LayerBoat.jsx.
 3. Run this plugin in Figma, select a frame, and click Send to After Effects.
 

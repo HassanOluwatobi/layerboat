@@ -1,6 +1,6 @@
 name: Download page
 
-# Publishes the site folder to https://hassanoluwatobi.github.io/layerboat
+# Publishes the site folder to https://tobihassan.com/layerboat
 on:
   push:
     branches: [main]
