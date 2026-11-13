@@ -39,6 +39,18 @@
     rmTree(new File(panels + 'Bridge from Figma.jsx'));
   }
 
+  // 2b. Copies made with After Effects' own File > Scripts > Install ScriptUI Panel,
+  // which go into the After Effects program folder
+  try {
+    var appScripts = Folder.appPackage ? new Folder(Folder.appPackage.parent.fsName + '/Scripts') : null;
+    var spots = appScripts ? [appScripts, new Folder(appScripts.fsName + '/ScriptUI Panels')] : [];
+    for (var sp = 0; sp < spots.length; sp++) {
+      if (!spots[sp].exists) continue;
+      var ours = spots[sp].getFiles(function (f) { return f instanceof File && /^(LayerBoat|Install LayerBoat|Bridge from Figma).*\.jsx$/i.test(decodeURI(f.name)); });
+      for (var o = 0; o < ours.length; o++) rmTree(ours[o]);
+    }
+  } catch (eApp) {}
+
   // 3. The Illustrator scripts, where the installer could add them
   var appRoot = isMac ? new Folder('/Applications') : new Folder(($.getenv('ProgramFiles') || 'C:/Program Files') + '/Adobe');
   var ais = appRoot.exists ? appRoot.getFiles('Adobe Illustrator*') : [];
