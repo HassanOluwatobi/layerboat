@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LayerBoat vs Overlord · A free Overlord alternative for Figma, Illustrator and After Effects</title>
-<meta name="description" content="LayerBoat and Overlord by Battle Axe compared: price, licence, apps and features. LayerBoat is a free, open source way to move layers between Figma, Illustrator and After Effects.">
-<meta property="og:title" content="LayerBoat vs Overlord">
-<meta property="og:description" content="A free, open source alternative to Overlord for moving layers between Figma, Illustrator and After Effects.">
+<title>LayerBoat vs Overlord: a free Overlord alternative for Figma, Illustrator and After Effects</title>
+<meta name="description" content="Overlord by Battle Axe costs $75. LayerBoat is free and open source. Here is how they compare on price, apps, text, gradients and setup.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LayerBoat vs Overlord: a free Overlord alternative for Figma, Illustrator and After Effects">
+<meta property="og:description" content="Overlord by Battle Axe costs $75. LayerBoat is free and open source. Here is how they compare on price, apps, text, gradients and setup.">
 <meta property="og:image" content="https://tobihassan.com/layerboat/cover.jpg">
 <meta property="og:url" content="https://tobihassan.com/layerboat/vs-overlord">
 <link rel="canonical" href="https://tobihassan.com/layerboat/vs-overlord">
@@ -14,6 +15,7 @@
 <link rel="icon" href="/layerboat/icon.svg" type="image/svg+xml">
 <link rel="icon" href="/layerboat/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/layerboat/apple-touch-icon.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "headline": "LayerBoat vs Overlord: a free Overlord alternative for Figma, Illustrator and After Effects", "description": "Overlord by Battle Axe costs $75. LayerBoat is free and open source. Here is how they compare on price, apps, text, gradients and setup.", "url": "https://tobihassan.com/layerboat/vs-overlord", "dateModified": "2026-11-13", "author": {"@type": "Person", "name": "Hassan Oluwatobi", "url": "https://x.com/Art_sassin"}, "image": "https://tobihassan.com/layerboat/cover.jpg"}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is there a free alternative to Overlord?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. LayerBoat is free and open source, and moves layers between Figma, Illustrator and After Effects in every direction. It doesn't cover Photoshop."}}, {"@type": "Question", "name": "Does LayerBoat work with Photoshop?", "acceptedAnswer": {"@type": "Answer", "text": "No. If you need Photoshop layers in After Effects, Overlord does that."}}, {"@type": "Question", "name": "Can I use both?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. They install separately and don't get in each other's way."}}]}]}</script>
 <style>
   :root { --ink:#232326; --soft:#5f5f67; --faint:#8b8b93; --line:#ebebeb; --bg:#fcfcfc; --card:#ffffff; --chip:#f2f2f2;
           --ae:#9999ff; --aebg:#1b1b2b; --ui:#232325; --ui2:#2c2c2f; --uiline:#3a3a3e; --uitext:#d6d6da; --uifaint:#8d8d95; }
@@ -152,6 +154,10 @@
   .cmp td:first-child { color:var(--soft); width:32%; }
   .cmp td.us { font-weight:600; }
   .cmp-wrap { overflow-x:auto; }
+  .cmp.multi { min-width:720px; }
+  .cmp.multi td:first-child { width:auto; }
+  .cmp.multi th, .cmp.multi td { padding:12px 14px; font-size:14px; }
+  .cmp.multi th.us, .cmp.multi td:nth-child(2) { font-weight:600; }
   .cmp td.cw { background:#eaf7ef; }
   .cmp td.cl { background:#fdf0f0; }
   .cmp td.cw .m { color:#1f9d55; font-weight:700; }
@@ -168,6 +174,30 @@
   .pick ul { padding-left:18px; color:var(--soft); font-size:15px; display:grid; gap:6px; }
   @media (max-width:600px) { .cmp th, .cmp td { padding:12px; font-size:14px; } .pick { grid-template-columns:1fr; } }
 </style>
+<style>
+  .article { max-width:720px; margin:0 auto; }
+  .article h1 { text-align:left; margin:0 0 18px; font-size:clamp(34px,5vw,50px); }
+  .article .dek { color:var(--soft); font-size:19px; margin-bottom:10px; }
+  .article .byline { font-size:13.5px; color:var(--faint); margin-bottom:34px; }
+  .article h2 { font-family:"Geist Serif","Iowan Old Style",Georgia,serif; font-weight:400; font-size:30px; letter-spacing:-.01em; margin:46px 0 12px; }
+  .article h3 { font-size:18px; font-weight:650; margin:26px 0 8px; }
+  .article p, .article li { font-size:17px; line-height:1.7; color:#3a3a40; }
+  .article p + p { margin-top:14px; }
+  .article ul { padding-left:20px; margin-top:10px; display:grid; gap:6px; }
+  .article a { text-decoration:underline; text-underline-offset:2px; }
+  .article .verdict { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin:26px 0; }
+  .article .verdict p { font-size:16px; }
+  .article .verdict b { color:var(--ink); }
+  .article .wide { margin:24px -60px; }
+  .article .sources { font-size:13.5px; color:var(--faint); }
+  .article .sources li { font-size:13.5px; color:var(--faint); line-height:1.5; }
+  .article .cta-box { text-align:center; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:30px 24px; margin:44px 0 10px; }
+  .article .cta-box p { margin-bottom:18px; }
+  .others { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; }
+  .others a { display:block; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; text-decoration:none; font-weight:600; font-size:15px; }
+  .others a span { display:block; font-weight:400; color:var(--faint); font-size:13px; margin-top:2px; }
+  @media (max-width:860px) { .article .wide { margin:24px 0; } .others { grid-template-columns:1fr; } }
+</style>
 <script>if(/github\.io$/.test(location.hostname))location.replace("https://tobihassan.com/layerboat/vs-overlord");</script>
 <script>if(/(^|\.)tobihassan\.com$/.test(location.hostname)){window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments)};["/_vercel/insights/script.js","/_vercel/speed-insights/script.js"].forEach(function(s){var e=document.createElement("script");e.defer=1;e.src=s;document.head.appendChild(e)})}</script>
 </head>
@@ -175,30 +205,51 @@
 <div class="wrap">
   <header>
     <a href="/layerboat"><img src="/layerboat/logo-lockup.svg" alt="LayerBoat"></a>
-    <nav><a href="/layerboat#features">Features</a><a href="/layerboat#install">Install</a><a href="/layerboat#use">How to use</a><a href="https://github.com/HassanOluwatobi/layerboat">GitHub</a></nav>
+    <nav><a href="/layerboat#features">Features</a><a href="/layerboat#install">Install</a><a href="/layerboat/compare">Compare</a><a href="https://github.com/HassanOluwatobi/layerboat">GitHub</a></nav>
   </header>
-  <div class="hero" style="padding-bottom:48px">
+  <main class="article" style="padding:40px 0 20px">
+<p class="byline">By Hassan Oluwatobi, the maker of LayerBoat · Updated November 2026</p>
     <h1>LayerBoat vs Overlord</h1>
-    <p class="sub">Overlord by Battle Axe is the best-known way to bring designs into After Effects. LayerBoat does the same core job between Figma, Illustrator and After Effects, for free. Here's how the two compare.</p>
-    <a class="btn" id="dl" onclick="window.va&&window.va('event',{name:'Download'})" href="https://github.com/HassanOluwatobi/layerboat/releases/latest"><span id="dl-label">Download LayerBoat</span></a>
-    <p class="meta" id="dl-meta">Free · Mac and Windows</p>
-  </div>
-  <section style="padding-top:48px">
-    <div class="sec-head"><h2>Side by side</h2></div>
-    <div class="cmp-wrap"><table class="cmp"><thead><tr><th></th><th class="us">LayerBoat</th><th>Overlord</th></tr></thead><tbody><tr><td>Price</td><td class="cw us"><span class="m">✓</span> Free</td><td class="cl"><span class="m">✕</span> $75 per user, one time</td></tr><tr><td>Updates</td><td class="cw us"><span class="m">✓</span> Every update, free</td><td class="cl"><span class="m">✕</span> One year included, then optional renewal</td></tr><tr><td>Licence</td><td class="cw us"><span class="m">✓</span> Open source (MIT). Install it on any number of machines</td><td class="cl"><span class="m">✕</span> Licence key for 2 machines per user</td></tr><tr><td>Account or sign-in</td><td class="cw us"><span class="m">✓</span> None needed</td><td class="cl"><span class="m">✕</span> Online unlock step during setup</td></tr><tr><td>Figma ↔ After Effects</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Illustrator ↔ After Effects</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Figma ↔ Illustrator</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Editable text</td><td class="cw us"><span class="m">✓</span> Yes, with mixed styles in one box</td><td class="cw"><span class="m">✓</span> Yes, with per-character styling</td></tr><tr><td>Linear and radial gradients</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Mac and Windows</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Works offline</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes, after setup</td></tr><tr><td>Support</td><td class="cl us"><span class="m">✕</span> GitHub issues</td><td class="cw"><span class="m">✓</span> Contact form and Discord</td></tr><tr><td>Figma components as Essential Graphics</td><td class="cl us"><span class="m">✕</span> No</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Photoshop</td><td class="cl us"><span class="m">✕</span> No</td><td class="cw"><span class="m">✓</span> Yes, including adjustment layers and layer styles</td></tr></tbody></table><p class="legend"><span class="sw cw"></span>Better or equal <span class="sw cl"></span>Behind</p></div>
-    <p class="note">Overlord details come from battleaxe.co/overlord as of November 2026. Overlord is a product of Battle Axe. LayerBoat isn't affiliated with Battle Axe, Figma or Adobe.</p>
-    <div class="pick">
-      <div class="card"><h3>LayerBoat is a good fit if</h3><ul><li>You work between Figma, Illustrator and After Effects.</li><li>You want it free, on as many machines as you like.</li><li>You'd rather not deal with licence keys or renewals.</li><li>You like being able to read or change the code.</li></ul></div>
-      <div class="card"><h3>Overlord is a good fit if</h3><ul><li>You need Photoshop layers in After Effects.</li><li>You want Figma components as Essential Graphics.</li><li>You want paid support and a Discord community.</li></ul></div>
+    <p class="dek">Overlord is the tool most motion designers reach for to get artwork into After Effects. LayerBoat covers the same core job between Figma, Illustrator and After Effects, for free. Here's where each one is the better pick.</p>
+    <p>A quick note before we start. I make LayerBoat, so read this with that in mind. I've kept every fact about the other tool to what its makers publish, and I've linked my sources at the end.</p>
+    <div class="verdict"><p><b>The short answer.</b> If you move work between Figma, Illustrator and After Effects, LayerBoat does that for free with no licence to manage. If you also need Photoshop layers, or Figma components as Essential Graphics, Overlord is worth its $75.</p></div>
+    <div class="wide"><div class="cmp-wrap"><table class="cmp"><thead><tr><th></th><th class="us">LayerBoat</th><th>Overlord</th></tr></thead><tbody><tr><td>Price</td><td class="cw us"><span class="m">✓</span> Free</td><td class="cl"><span class="m">✕</span> $75 per user, one time</td></tr><tr><td>Updates</td><td class="cw us"><span class="m">✓</span> Every update, free</td><td class="cl"><span class="m">✕</span> One year included, then optional renewal</td></tr><tr><td>Licence</td><td class="cw us"><span class="m">✓</span> Open source (MIT), any number of machines</td><td class="cl"><span class="m">✕</span> Licence key for 2 machines per user</td></tr><tr><td>Account or sign-in</td><td class="cw us"><span class="m">✓</span> None needed</td><td class="cl"><span class="m">✕</span> Online unlock step during setup</td></tr><tr><td>Figma ↔ After Effects</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Illustrator ↔ After Effects</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Figma ↔ Illustrator</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Editable text</td><td class="cw us"><span class="m">✓</span> Yes, with mixed styles in one box</td><td class="cw"><span class="m">✓</span> Yes, with per-character styling</td></tr><tr><td>Linear and radial gradients</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Mac and Windows</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Works offline</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes, after setup</td></tr><tr><td>Figma components as Essential Graphics</td><td class="cl us"><span class="m">✕</span> No</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Photoshop</td><td class="cl us"><span class="m">✕</span> No</td><td class="cw"><span class="m">✓</span> Yes, including adjustment layers and layer styles</td></tr></tbody></table><p class="legend"><span class="sw cw"></span>Better or equal <span class="sw cl"></span>Behind</p></div></div>
+    <h2>What each tool is</h2>
+    <p>Overlord is a paid tool from Battle Axe, the studio behind several well-known After Effects tools. It started as a bridge from Illustrator to After Effects and has grown to cover Figma and Photoshop. It runs as a desktop app with a free Figma plugin that connects to it.</p>
+    <p>LayerBoat is a free, open source tool that moves layers between Figma, Illustrator and After Effects in every direction. It installs as a panel in After Effects, a panel in Illustrator and a plugin in Figma.</p>
+    <h2>Price and licence</h2>
+    <p>Overlord costs $75 per user as a one-time purchase. That includes a year of feature updates. After that you can renew to get newer features, and Overlord keeps working if you don't. Each licence covers two machines for one person.</p>
+    <p>LayerBoat costs nothing. There's no licence key, no machine limit and no renewal. The code is MIT licensed, so a studio can install it on every machine it has.</p>
+    <h2>Getting artwork across</h2>
+    <p>Both tools rebuild your design with After Effects' own layers instead of flattening it into an image. Shapes become shape layers, text stays editable and linear and radial gradients come across as gradients.</p>
+    <p>Both handle Figma and Illustrator in both directions with After Effects, and both move work between Figma and Illustrator. LayerBoat also rebuilds a frame in place when you send it again, keeping the keyframes and effects you've added.</p>
+    <h2>Where Overlord is ahead</h2>
+    <ul>
+      <li><b>Photoshop.</b> Overlord brings Photoshop layers into After Effects, including adjustment layers, masks and layer styles. LayerBoat doesn't work with Photoshop.</li>
+      <li><b>Figma components.</b> Overlord can bring a Figma component in as an Essential Graphics precomp, so every copy shares one master. LayerBoat brings each copy in as its own layers.</li>
+      <li><b>Support.</b> Overlord has direct licence support and a Discord community. LayerBoat's support happens on GitHub.</li>
+    </ul>
+    <h2>Where LayerBoat is ahead</h2>
+    <ul>
+      <li><b>Cost.</b> It's free, today and for every future update.</li>
+      <li><b>No licence to manage.</b> No unlock step, no machine limit, no renewal.</li>
+      <li><b>Open source.</b> Anyone can read the code, fix a bug or adapt it for their studio.</li>
+    </ul>
+    <h2>Which should you choose?</h2>
+    <p>Pick LayerBoat if your work lives in Figma, Illustrator and After Effects and you'd rather not pay for a licence. Pick Overlord if Photoshop is part of your process, or if you lean on Figma components and want them as Essential Graphics.</p>
+    <h2>Sources</h2><ul class="sources"><li><a href="https://battleaxe.co/overlord">Overlord by Battle Axe</a></li></ul>
+    <h2>Questions</h2>
+    <details><summary>Is there a free alternative to Overlord?</summary><p>Yes. LayerBoat is free and open source, and moves layers between Figma, Illustrator and After Effects in every direction. It doesn't cover Photoshop.</p></details><details><summary>Does LayerBoat work with Photoshop?</summary><p>No. If you need Photoshop layers in After Effects, Overlord does that.</p></details><details><summary>Can I use both?</summary><p>Yes. They install separately and don't get in each other's way.</p></details>
+    <div class="cta-box">
+      <p>LayerBoat is free for Mac and Windows. It takes about five minutes to set up.</p>
+      <a class="btn" id="dl" onclick="window.va&&window.va('event',{name:'Download'})" href="https://github.com/HassanOluwatobi/layerboat/releases/latest"><span id="dl-label">Download LayerBoat</span></a>
+      <p class="meta" id="dl-meta" style="margin-bottom:0">Free · Mac and Windows</p>
     </div>
-  </section>
-  <section class="cta">
-    <h2 class="serif">Try LayerBoat on your next animation.</h2>
-    <a class="btn" href="https://github.com/HassanOluwatobi/layerboat/releases/latest" id="dl2" onclick="window.va&&window.va('event',{name:'Download'})">Download LayerBoat</a>
-    <p class="meta"><a href="/layerboat">See all features and setup steps</a></p>
-  </section>
-  <footer>
-    <span>Made by <a href="https://x.com/Art_sassin" style="text-decoration:underline">Hassan Oluwatobi</a>. Free and open source under the MIT licence. Not affiliated with Battle Axe, Figma or Adobe.</span>
+    <h2>More comparisons</h2>
+    <div class="others"><a href="/layerboat/vs-uxlink">LayerBoat vs UXLink<span>aescripts · $34.99</span></a><a href="/layerboat/vs-aeux">LayerBoat vs AEUX<span>Free · no longer maintained</span></a><a href="/layerboat/vs-convertify">LayerBoat vs Convertify<span>Hypermatic · subscription</span></a><a href="/layerboat/compare">All Figma to After Effects tools<span>The full roundup</span></a></div>
+  </main>
+  <footer style="margin-top:56px">
+    <span>Made by <a href="https://x.com/Art_sassin" style="text-decoration:underline">Hassan Oluwatobi</a>. Free and open source under the MIT licence. Not affiliated with any of the tools compared here, Figma or Adobe.</span>
     <a href="https://github.com/HassanOluwatobi/layerboat">github.com/HassanOluwatobi/layerboat</a>
   </footer>
 </div>

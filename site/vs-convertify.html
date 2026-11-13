@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LayerBoat vs Convertify: Figma to After Effects without the subscription</title>
+<meta name="description" content="Convertify sends Figma to After Effects through an Adobe XD file and needs a Pro subscription. LayerBoat sends layers straight across for free. Here is how they compare.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LayerBoat vs Convertify: Figma to After Effects without the subscription">
+<meta property="og:description" content="Convertify sends Figma to After Effects through an Adobe XD file and needs a Pro subscription. LayerBoat sends layers straight across for free. Here is how they compare.">
+<meta property="og:image" content="https://tobihassan.com/layerboat/cover.jpg">
+<meta property="og:url" content="https://tobihassan.com/layerboat/vs-convertify">
+<link rel="canonical" href="https://tobihassan.com/layerboat/vs-convertify">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/layerboat/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/layerboat/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/layerboat/apple-touch-icon.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "headline": "LayerBoat vs Convertify: Figma to After Effects without the subscription", "description": "Convertify sends Figma to After Effects through an Adobe XD file and needs a Pro subscription. LayerBoat sends layers straight across for free. Here is how they compare.", "url": "https://tobihassan.com/layerboat/vs-convertify", "dateModified": "2026-11-13", "author": {"@type": "Person", "name": "Hassan Oluwatobi", "url": "https://x.com/Art_sassin"}, "image": "https://tobihassan.com/layerboat/cover.jpg"}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is there a free alternative to Convertify for After Effects?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. LayerBoat sends Figma and Illustrator designs straight into After Effects for free."}}, {"@type": "Question", "name": "Does Convertify need Adobe XD?", "acceptedAnswer": {"@type": "Answer", "text": "Its After Effects workflow converts your design to an Adobe XD file first, then uses XD's export to After Effects."}}, {"@type": "Question", "name": "Can LayerBoat convert to Sketch or PDF?", "acceptedAnswer": {"@type": "Answer", "text": "No. LayerBoat only moves layers between Figma, Illustrator and After Effects."}}]}]}</script>
+<style>
+  :root { --ink:#232326; --soft:#5f5f67; --faint:#8b8b93; --line:#ebebeb; --bg:#fcfcfc; --card:#ffffff; --chip:#f2f2f2;
+          --ae:#9999ff; --aebg:#1b1b2b; --ui:#232325; --ui2:#2c2c2f; --uiline:#3a3a3e; --uitext:#d6d6da; --uifaint:#8d8d95; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body { font:16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  a { color:inherit; }
+  .wrap { max-width:1000px; margin:0 auto; padding:0 24px; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:24px 0; }
+  header img { height:32px; display:block; }
+  header nav a { font-size:14px; color:var(--soft); text-decoration:none; margin-left:22px; }
+  header nav a:hover { color:var(--ink); }
+  .hero { text-align:center; padding:60px 0 76px; }
+  .apps { display:flex; justify-content:center; align-items:center; gap:16px; margin-bottom:36px; }
+  .apps img { width:68px; height:68px; border-radius:17px; box-shadow:0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.08); }
+  .apps span { color:#bdbdbd; font-size:20px; }
+  h1, .serif { font-family:"Geist Serif", "Iowan Old Style", Georgia, serif; font-weight:400; letter-spacing:-.02em; }
+  h1 { font-size:clamp(34px, 5.6vw, 56px); line-height:1.08; max-width:760px; margin:0 auto; }
+  .sub { color:var(--soft); font-size:18px; max-width:560px; margin:20px auto 32px; }
+  .btn { display:inline-flex; align-items:center; gap:10px; background:var(--ink); color:#fff; text-decoration:none; font-weight:600; font-size:16px; padding:15px 26px; border-radius:12px; transition:transform .15s cubic-bezier(.32,.72,0,1), box-shadow .15s; box-shadow:0 1px 2px rgba(0,0,0,.2), 0 6px 18px rgba(35,35,38,.18); }
+  .btn:hover { transform:translateY(-1px); box-shadow:0 1px 2px rgba(0,0,0,.2), 0 10px 26px rgba(35,35,38,.24); }
+  .btn:active { transform:scale(.975); }
+  .meta { margin-top:14px; font-size:13px; color:var(--faint); }
+  .phone-note { display:none; }
+  section { padding:72px 0; border-top:1px solid var(--line); }
+  .sec-head { max-width:620px; margin-bottom:40px; }
+  .sec-head h2 { font-family:"Geist Serif", "Iowan Old Style", Georgia, serif; font-weight:400; font-size:38px; line-height:1.12; letter-spacing:-.015em; margin-bottom:12px; }
+  .sec-head p { color:var(--soft); font-size:17px; }
+
+  /* features */
+  .feature { display:grid; grid-template-columns:1fr 1.15fr; gap:48px; align-items:center; padding:28px 0; }
+  .feature + .feature { border-top:1px dashed var(--line); }
+  .feature.flip .copy { order:2; }
+  .feature h3 { font-size:22px; font-weight:650; letter-spacing:-.01em; line-height:1.25; margin-bottom:10px; }
+  .feature p { color:var(--soft); font-size:16px; }
+  .stage { background:linear-gradient(180deg,#f4f4f6,#ececf0); border:1px solid var(--line); border-radius:18px; padding:26px; display:flex; align-items:center; justify-content:center; gap:14px; min-height:260px; overflow:hidden; }
+  .win { background:var(--ui); border-radius:10px; box-shadow:0 1px 2px rgba(0,0,0,.2), 0 14px 34px rgba(20,20,30,.22); color:var(--uitext); font-size:12px; overflow:hidden; }
+  .win .bar { display:flex; align-items:center; gap:6px; padding:8px 10px; background:var(--ui2); border-bottom:1px solid var(--uiline); font-size:11px; color:var(--uifaint); }
+  .win .bar img { width:14px; height:14px; border-radius:4px; }
+  .row { display:flex; align-items:center; gap:8px; padding:6px 10px; border-bottom:1px solid #2b2b2e; white-space:nowrap; }
+  .row .ix { width:14px; color:var(--uifaint); font-size:10.5px; text-align:right; }
+  .ico { width:15px; height:15px; border-radius:3px; display:grid; place-items:center; font-size:9px; font-weight:700; flex:none; }
+  .i-frame { border:1.5px solid #8d8d95; }
+  .i-text { color:#fff; background:#55555c; }
+  .i-shape { background:#6c6cf0; color:#fff; }
+  .i-img { background:linear-gradient(135deg,#f5b14c,#e96a8d); }
+  .i-group { border:1.5px dashed #8d8d95; }
+  .indent { padding-left:26px; }
+  .arrow { color:#a3a3ab; font-size:22px; flex:none; }
+  .lanes { position:relative; flex:1; height:100%; }
+  .kf { position:absolute; top:50%; width:8px; height:8px; background:#e8c25c; transform:translate(-50%,-50%) rotate(45deg); border-radius:1px; }
+  .bar-span { position:absolute; top:50%; height:12px; transform:translateY(-50%); border-radius:3px; opacity:.55; }
+  .toast { position:absolute; right:14px; bottom:14px; background:#fff; color:var(--ink); border-radius:10px; padding:8px 12px; font-size:12px; font-weight:600; box-shadow:0 8px 22px rgba(0,0,0,.18); display:flex; align-items:center; gap:7px; }
+  .toast i { width:8px; height:8px; border-radius:50%; background:#34c47c; display:inline-block; }
+  .loop { position:relative; width:280px; height:220px; }
+  .loop img { position:absolute; width:62px; height:62px; border-radius:16px; box-shadow:0 8px 22px rgba(0,0,0,.14); }
+  .loop svg { position:absolute; inset:0; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:28px; }
+  .chip { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--soft); }
+
+  /* install */
+  ol.steps { list-style:none; counter-reset:s; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  ol.steps li { counter-increment:s; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; position:relative; }
+  ol.steps li::before { content:counter(s); width:26px; height:26px; border-radius:50%; background:var(--ink); color:#fff; font-size:12.5px; font-weight:600; display:grid; place-items:center; margin-bottom:14px; }
+  ol.steps li .app { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--faint); margin-bottom:6px; }
+  ol.steps li .app img { width:16px; height:16px; border-radius:4px; }
+  ol.steps li b { display:block; font-size:15.5px; margin-bottom:4px; }
+  ol.steps li span { color:var(--soft); font-size:14px; display:block; }
+  .warn { margin-top:14px; font-size:14px; color:var(--soft); background:#fff8e6; border:1px solid #f3e2b3; border-radius:12px; padding:12px 16px; }
+  code { font:12.5px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--chip); padding:1px 5px; border-radius:5px; overflow-wrap:anywhere; }
+  kbd { font:500 13.5px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; color:var(--ink); background:var(--chip); padding:1px 6px; border-radius:5px; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+
+  /* how to use: route picker */
+  .picker { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:22px; }
+  .picker .lbl { font-size:13px; color:var(--faint); font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
+  .seg { display:inline-flex; background:var(--chip); border-radius:12px; padding:4px; gap:2px; }
+  .seg button { all:unset; cursor:pointer; display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:9px; font-size:14px; font-weight:550; color:var(--soft); transition:background .15s, color .15s, box-shadow .15s; }
+  .seg button img { width:18px; height:18px; border-radius:5px; }
+  .seg button[aria-pressed="true"] { background:#fff; color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.06); }
+  .seg button[disabled] { opacity:.35; cursor:default; }
+  .seg button:focus-visible { outline:2px solid #6c6cf0; outline-offset:2px; }
+  .route { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .route .st { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; }
+  .route .st .n { font-size:12px; color:var(--faint); font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:7px; }
+  .route .st .n img { width:16px; height:16px; border-radius:4px; }
+  .route .st p { font-size:15px; color:var(--ink); }
+  .route-tip { margin-top:12px; font-size:14px; color:var(--soft); }
+  .fade { animation:fade .28s cubic-bezier(.22,1,.36,1); }
+  @keyframes fade { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+
+  /* faq */
+  details { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:0 20px; margin-bottom:10px; }
+  summary { cursor:pointer; list-style:none; padding:16px 0; font-weight:600; display:flex; justify-content:space-between; gap:16px; }
+  summary::-webkit-details-marker { display:none; }
+  summary::after { content:"+"; color:var(--faint); font-weight:400; font-size:20px; line-height:1; transition:transform .2s cubic-bezier(.32,.72,0,1); }
+  details[open] summary::after { transform:rotate(45deg); }
+  details p { color:var(--soft); font-size:15px; padding-bottom:16px; }
+  .cta { text-align:center; }
+  .cta h2 { font-size:36px; margin-bottom:24px; }
+  footer { border-top:1px solid var(--line); padding:28px 0 44px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:13.5px; color:var(--faint); }
+  footer a { text-decoration:none; } footer a:hover { color:var(--ink); }
+
+  @media (max-width:860px) {
+    .feature, .feature.flip { grid-template-columns:1fr; gap:22px; }
+    .feature.flip .copy { order:0; }
+    ol.steps { grid-template-columns:1fr 1fr; }
+    .route { grid-template-columns:1fr; }
+  }
+  @media (max-width:600px) {
+    .wrap { padding:0 20px; }
+    header { padding:18px 0; } header img { height:28px; }
+    header nav a:not(:last-child) { display:none; }
+    .hero { padding:28px 0 52px; }
+    .apps img { width:54px; height:54px; border-radius:14px; }
+    h1 { font-size:34px; }
+    .sub { font-size:16px; }
+    .btn { width:100%; justify-content:center; }
+    .phone-note { display:block; margin-top:14px; font-size:13.5px; background:var(--chip); border-radius:10px; padding:10px 14px; }
+    section { padding:52px 0; }
+    .sec-head h2 { font-size:30px; }
+    .stage { padding:16px; min-height:0; flex-direction:column; }
+    .stage .arrow { transform:rotate(90deg); }
+    .win { width:100% !important; }
+    ol.steps { grid-template-columns:1fr; }
+    .seg button span { display:none; }
+    footer { flex-direction:column; }
+  }
+  @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .btn, summary::after, .seg button { transition:none; } .fade { animation:none; } }
+</style>
+<style>
+  .cmp { width:100%; border-collapse:separate; border-spacing:0; background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; font-size:15px; }
+  .cmp th, .cmp td { text-align:left; padding:14px 18px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .cmp tr:last-child td { border-bottom:0; }
+  .cmp thead th { font-size:13px; color:var(--faint); font-weight:600; background:#fafafa; }
+  .cmp thead th.us { color:var(--ink); }
+  .cmp td:first-child { color:var(--soft); width:32%; }
+  .cmp td.us { font-weight:600; }
+  .cmp-wrap { overflow-x:auto; }
+  .cmp.multi { min-width:720px; }
+  .cmp.multi td:first-child { width:auto; }
+  .cmp.multi th, .cmp.multi td { padding:12px 14px; font-size:14px; }
+  .cmp.multi th.us, .cmp.multi td:nth-child(2) { font-weight:600; }
+  .cmp td.cw { background:#eaf7ef; }
+  .cmp td.cl { background:#fdf0f0; }
+  .cmp td.cw .m { color:#1f9d55; font-weight:700; }
+  .cmp td.cl .m { color:#d14343; font-weight:700; }
+  .cmp td.cw, .cmp td.cl { border-left:1px solid #fff; }
+  .legend { display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--faint); margin-top:10px; }
+  .legend .sw { width:12px; height:12px; border-radius:3px; display:inline-block; margin-left:6px; }
+  .legend .sw.cw { background:#cfeedd; } .legend .sw.cl { background:#f8d9d9; }
+
+  .note { font-size:13px; color:var(--faint); margin-top:12px; }
+  .pick { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:28px; }
+  .pick .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; }
+  .pick h3 { font-size:17px; margin-bottom:10px; }
+  .pick ul { padding-left:18px; color:var(--soft); font-size:15px; display:grid; gap:6px; }
+  @media (max-width:600px) { .cmp th, .cmp td { padding:12px; font-size:14px; } .pick { grid-template-columns:1fr; } }
+</style>
+<style>
+  .article { max-width:720px; margin:0 auto; }
+  .article h1 { text-align:left; margin:0 0 18px; font-size:clamp(34px,5vw,50px); }
+  .article .dek { color:var(--soft); font-size:19px; margin-bottom:10px; }
+  .article .byline { font-size:13.5px; color:var(--faint); margin-bottom:34px; }
+  .article h2 { font-family:"Geist Serif","Iowan Old Style",Georgia,serif; font-weight:400; font-size:30px; letter-spacing:-.01em; margin:46px 0 12px; }
+  .article h3 { font-size:18px; font-weight:650; margin:26px 0 8px; }
+  .article p, .article li { font-size:17px; line-height:1.7; color:#3a3a40; }
+  .article p + p { margin-top:14px; }
+  .article ul { padding-left:20px; margin-top:10px; display:grid; gap:6px; }
+  .article a { text-decoration:underline; text-underline-offset:2px; }
+  .article .verdict { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin:26px 0; }
+  .article .verdict p { font-size:16px; }
+  .article .verdict b { color:var(--ink); }
+  .article .wide { margin:24px -60px; }
+  .article .sources { font-size:13.5px; color:var(--faint); }
+  .article .sources li { font-size:13.5px; color:var(--faint); line-height:1.5; }
+  .article .cta-box { text-align:center; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:30px 24px; margin:44px 0 10px; }
+  .article .cta-box p { margin-bottom:18px; }
+  .others { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; }
+  .others a { display:block; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; text-decoration:none; font-weight:600; font-size:15px; }
+  .others a span { display:block; font-weight:400; color:var(--faint); font-size:13px; margin-top:2px; }
+  @media (max-width:860px) { .article .wide { margin:24px 0; } .others { grid-template-columns:1fr; } }
+</style>
+<script>if(/github\.io$/.test(location.hostname))location.replace("https://tobihassan.com/layerboat/vs-convertify");</script>
+<script>if(/(^|\.)tobihassan\.com$/.test(location.hostname)){window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments)};["/_vercel/insights/script.js","/_vercel/speed-insights/script.js"].forEach(function(s){var e=document.createElement("script");e.defer=1;e.src=s;document.head.appendChild(e)})}</script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="/layerboat"><img src="/layerboat/logo-lockup.svg" alt="LayerBoat"></a>
+    <nav><a href="/layerboat#features">Features</a><a href="/layerboat#install">Install</a><a href="/layerboat/compare">Compare</a><a href="https://github.com/HassanOluwatobi/layerboat">GitHub</a></nav>
+  </header>
+  <main class="article" style="padding:40px 0 20px">
+<p class="byline">By Hassan Oluwatobi, the maker of LayerBoat · Updated November 2026</p>
+    <h1>LayerBoat vs Convertify</h1>
+    <p class="dek">Convertify is a popular Figma plugin that converts designs into many formats, After Effects among them. LayerBoat does one job, moving layers between Figma, Illustrator and After Effects. Here's how they compare for motion work.</p>
+    <p>A quick note before we start. I make LayerBoat, so read this with that in mind. I've kept every fact about the other tool to what its makers publish, and I've linked my sources at the end.</p>
+    <div class="verdict"><p><b>The short answer.</b> If you need to convert Figma files to lots of formats, Convertify does far more than LayerBoat. If you only need Figma and Illustrator in After Effects, LayerBoat goes straight there, in both directions, for free.</p></div>
+    <div class="wide"><div class="cmp-wrap"><table class="cmp"><thead><tr><th></th><th class="us">LayerBoat</th><th>Convertify</th></tr></thead><tbody><tr><td>Price</td><td class="cw us"><span class="m">✓</span> Free</td><td class="cl"><span class="m">✕</span> $49 a month or $499 a year after 10 free trials</td></tr><tr><td>Route into After Effects</td><td class="cw us"><span class="m">✓</span> Straight across</td><td class="cl"><span class="m">✕</span> Through an Adobe XD file</td></tr><tr><td>After Effects → Figma</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cl"><span class="m">✕</span> No</td></tr><tr><td>Illustrator ↔ After Effects</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cl"><span class="m">✕</span> No</td></tr><tr><td>Figma → After Effects</td><td class="cw us"><span class="m">✓</span> Yes</td><td class="cw"><span class="m">✓</span> Yes</td></tr><tr><td>Other formats (Sketch, XD, PDF and more)</td><td class="cl us"><span class="m">✕</span> No</td><td class="cw"><span class="m">✓</span> Yes</td></tr></tbody></table><p class="legend"><span class="sw cw"></span>Better or equal <span class="sw cl"></span>Behind</p></div></div>
+    <h2>How each one gets your design into After Effects</h2>
+    <p>Convertify, by Hypermatic, converts a Figma page into an Adobe XD file. You then open that file in XD and use its own export to send the artboard to After Effects. It's a two-step route through a third app.</p>
+    <p>LayerBoat sends layers straight from Figma into After Effects. There's no file in between and no other app to open.</p>
+    <h2>Price</h2>
+    <p>Convertify includes 10 free Pro trials. After that, the After Effects workflow needs Convertify Pro, which costs $49 a month or $499 a year per user.</p>
+    <p>LayerBoat is free.</p>
+    <h2>Where Convertify is ahead</h2>
+    <ul>
+      <li><b>Many formats.</b> Convertify exports Figma to Sketch, XD, After Effects and more, and imports XD, Illustrator, PDF and Google Docs into Figma.</li>
+      <li><b>In the Figma Community.</b> It installs with one click from Figma.</li>
+    </ul>
+    <h2>Where LayerBoat is ahead</h2>
+    <ul>
+      <li><b>Straight into After Effects.</b> No Adobe XD step in the middle.</li>
+      <li><b>Both directions.</b> Send a comp from After Effects back to Figma or Illustrator.</li>
+      <li><b>Built for motion.</b> Sending an updated frame again keeps your keyframes and effects.</li>
+      <li><b>Cost.</b> Free, with no subscription.</li>
+    </ul>
+    <h2>Which should you choose?</h2>
+    <p>Pick Convertify if converting between many design formats is part of your job and the subscription pays for itself. Pick LayerBoat if your goal is animating Figma or Illustrator work in After Effects.</p>
+    <h2>Sources</h2><ul class="sources"><li><a href="https://www.hypermatic.com/convertify">Convertify by Hypermatic</a></li><li><a href="https://docs.hypermatic.com/convertify/export/adobe-after-effects">Convertify Figma to After Effects tutorial</a></li><li><a href="https://docs.hypermatic.com/convertify/faq/plans">Convertify Free vs Pro</a></li><li><a href="https://www.hypermatic.com/">Hypermatic pricing</a></li></ul>
+    <h2>Questions</h2>
+    <details><summary>Is there a free alternative to Convertify for After Effects?</summary><p>Yes. LayerBoat sends Figma and Illustrator designs straight into After Effects for free.</p></details><details><summary>Does Convertify need Adobe XD?</summary><p>Its After Effects workflow converts your design to an Adobe XD file first, then uses XD's export to After Effects.</p></details><details><summary>Can LayerBoat convert to Sketch or PDF?</summary><p>No. LayerBoat only moves layers between Figma, Illustrator and After Effects.</p></details>
+    <div class="cta-box">
+      <p>LayerBoat is free for Mac and Windows. It takes about five minutes to set up.</p>
+      <a class="btn" id="dl" onclick="window.va&&window.va('event',{name:'Download'})" href="https://github.com/HassanOluwatobi/layerboat/releases/latest"><span id="dl-label">Download LayerBoat</span></a>
+      <p class="meta" id="dl-meta" style="margin-bottom:0">Free · Mac and Windows</p>
+    </div>
+    <h2>More comparisons</h2>
+    <div class="others"><a href="/layerboat/vs-overlord">LayerBoat vs Overlord<span>Battle Axe · $75</span></a><a href="/layerboat/vs-uxlink">LayerBoat vs UXLink<span>aescripts · $34.99</span></a><a href="/layerboat/vs-aeux">LayerBoat vs AEUX<span>Free · no longer maintained</span></a><a href="/layerboat/compare">All Figma to After Effects tools<span>The full roundup</span></a></div>
+  </main>
+  <footer style="margin-top:56px">
+    <span>Made by <a href="https://x.com/Art_sassin" style="text-decoration:underline">Hassan Oluwatobi</a>. Free and open source under the MIT licence. Not affiliated with any of the tools compared here, Figma or Adobe.</span>
+    <a href="https://github.com/HassanOluwatobi/layerboat">github.com/HassanOluwatobi/layerboat</a>
+  </footer>
+</div>
+<script>
+// Point the button straight at the newest zip, so one click downloads it.
+fetch('https://api.github.com/repos/HassanOluwatobi/layerboat/releases/latest')
+  .then(function (r) { return r.ok ? r.json() : null; })
+  .then(function (rel) {
+    if (!rel || !rel.assets) return;
+    var zip = rel.assets.filter(function (a) { return /\.zip$/i.test(a.name); })[0];
+    if (!zip) return;
+    document.getElementById('dl').href = zip.browser_download_url;
+    var d2 = document.getElementById('dl2'); if (d2) { d2.href = zip.browser_download_url; d2.textContent = 'Download ' + rel.name; }
+    document.getElementById('dl-label').textContent = 'Download ' + rel.name;
+    document.getElementById('dl-meta').textContent = (zip.size / 1048576).toFixed(1) + ' MB · Mac and Windows · After Effects, Illustrator and Figma';
+  })
+  .catch(function () {});
+</script>
+</body>
+</html>
