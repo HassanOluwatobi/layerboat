@@ -2,6 +2,39 @@
 // Reads the selection and turns it into a JSON description the AE panel rebuilds.
 
 figma.showUI(__html__, { width: 280, height: 290, themeColors: true });
+// Temporary copies used for measuring and exporting live in one frame at the
+// bottom of the layers list, kept collapsed and removed when the work is done,
+// so they never flash at the top of the layers panel. The frame sits at the
+// page origin, so a copy's position inside it equals its position on the page.
+var SCRATCH = null;
+function scratch() {
+  if (SCRATCH && !SCRATCH.removed) return SCRATCH;
+  var f = figma.createFrame();
+  f.name = 'LayerBoat (working, removed automatically)';
+  f.fills = []; f.clipsContent = false; f.x = 0; f.y = 0; f.resize(1, 1);
+  figma.currentPage.insertChild(0, f);
+  try { f.expanded = false; } catch (e) {}
+  SCRATCH = f;
+  return f;
+}
+function dropScratch() {
+  try { if (SCRATCH && !SCRATCH.removed) SCRATCH.remove(); } catch (e) {}
+  SCRATCH = null;
+}
+
+// The status line in the plugin follows the selection
+var busy = false;
+function selSummary() {
+  var s = figma.currentPage.selection;
+  if (!s.length) return 'Select layers or a frame.';
+  if (separateFrames(s)) return s.length + ' frames selected. Each becomes its own comp.';
+  if (s.length === 1) return '\u201c' + s[0].name + '\u201d is ready to send.';
+  return s.length + ' layers selected. They go across together.';
+}
+function postSel() { if (!busy) figma.ui.postMessage({ type: 'sel', text: selSummary() }); }
+figma.on('selectionchange', postSel);
+figma.on('currentpagechange', function () { dropScratch(); postSel(); });
+
 
 var warnings = {};
 function warn(key) { warnings[key] = true; }
@@ -141,7 +174,7 @@ function onlyTranslation(node) {
 async function exportFills(node) {
   var copy = node.clone();
   try {
-    figma.currentPage.appendChild(copy);
+    scratch().appendChild(copy);
     if ('children' in copy) { while (copy.children.length) copy.children[0].remove(); }
     if ('strokes' in copy) copy.strokes = [];
     if ('effects' in copy) copy.effects = [];
@@ -162,7 +195,7 @@ async function exportFills(node) {
 async function exportWhole(node) {
   var copy = node.clone();
   try {
-    figma.currentPage.appendChild(copy);
+    scratch().appendChild(copy);
     copy.opacity = 1;
     if ('blendMode' in copy) copy.blendMode = 'PASS_THROUGH';
     copy.relativeTransform = onlyTranslation(node);
@@ -179,7 +212,7 @@ async function exportWhole(node) {
 async function exportStroke(node) {
   var copy = node.clone();
   try {
-    figma.currentPage.appendChild(copy);
+    scratch().appendChild(copy);
     if ('children' in copy) { while (copy.children.length) copy.children[0].remove(); }
     if ('fills' in copy) copy.fills = [];
     if ('effects' in copy) copy.effects = [];
@@ -198,7 +231,7 @@ async function exportStroke(node) {
 function roundedRectGeometry(node) {
   var rr = figma.createRectangle();
   try {
-    figma.currentPage.appendChild(rr);
+    scratch().appendChild(rr);
     rr.resize(Math.max(0.01, node.width), Math.max(0.01, node.height));
     if (node.cornerRadius !== figma.mixed) rr.cornerRadius = node.cornerRadius || 0;
     else {
@@ -400,11 +433,11 @@ function flattenedGeometry(node) {
   var copy = null;
   try {
     copy = node.clone();
-    figma.currentPage.appendChild(copy);
+    scratch().appendChild(copy);
     copy.relativeTransform = node.absoluteTransform;
     // flattening alone keeps a vector's corner rounding as a setting; a union
     // first bakes it into the outline
-    if (node.type === 'VECTOR' && roundedVector(node)) copy = figma.union([copy], figma.currentPage);
+    if (node.type === 'VECTOR' && roundedVector(node)) copy = figma.union([copy], scratch());
     var flat = figma.flatten([copy]);
     copy = flat;
     // flatten may shift the origin; express geometry in the original node's space
@@ -608,7 +641,7 @@ async function textLayout(node, o) {
   var copy = node.clone();
   var svg;
   try {
-    figma.currentPage.appendChild(copy);
+    scratch().appendChild(copy);
     if ('effects' in copy) copy.effects = [];
     copy.relativeTransform = onlyTranslation(node);
     svg = await copy.exportAsync({ format: 'SVG_STRING', svgOutlineText: false, useAbsoluteBounds: true });
@@ -661,7 +694,7 @@ async function textLayout(node, o) {
   {
     var copy2 = node.clone(), outl;
     try {
-      figma.currentPage.appendChild(copy2);
+      scratch().appendChild(copy2);
       if ('effects' in copy2) copy2.effects = [];
       copy2.strokes = [];
       try { copy2.textDecoration = 'NONE'; } catch (eD) {}
@@ -738,7 +771,7 @@ async function decoMetrics(node, i, kind) {
   if (decoCache.hasOwnProperty(key)) return decoCache[key];
   var t = figma.createText(), res = null;
   try {
-    figma.currentPage.appendChild(t);
+    scratch().appendChild(t);
     t.fontName = font; t.fontSize = size;
     t.characters = '\u00a0\u00a0\u00a0\u00a0\u00a0';
     t.setRangeTextDecoration(0, 5, kind);
@@ -778,7 +811,7 @@ async function glyphWidths(node, o) {
 async function advanceOf(font, size, ch) {
   var t = figma.createText();
   try {
-    figma.currentPage.appendChild(t);
+    scratch().appendChild(t);
     t.fontName = font; t.fontSize = size; t.letterSpacing = { unit: 'PIXELS', value: 0 };
     t.textAutoResize = 'WIDTH_AND_HEIGHT';
     // Figma rounds text box widths, so twenty copies give a precise average
@@ -855,7 +888,7 @@ async function measure(node, from, to) {
   if (to <= from) return 0;
   var c = node.clone();
   try {
-    figma.currentPage.appendChild(c);
+    scratch().appendChild(c);
     var len = c.characters.length;
     if (to < len) c.deleteCharacters(to, len);
     if (from > 0) c.deleteCharacters(0, from);
@@ -1604,6 +1637,17 @@ async function makePayload(sel) {
 }
 
 figma.ui.onmessage = async function (msg) {
+  if (msg.type === 'hello') { postSel(); return; }
+  var keepSel = figma.currentPage.selection.slice();
+  busy = true;
+  try { await handle(msg); }
+  finally {
+    dropScratch();
+    try { var alive = keepSel.filter(function (n) { return !n.removed; }); var now = figma.currentPage.selection.map(function (n) { return n.id; }).join(','); if (alive.length === keepSel.length && msg.type !== 'build' && now !== alive.map(function (n) { return n.id; }).join(',')) figma.currentPage.selection = alive; } catch (eS) {}
+    busy = false;
+  }
+};
+async function handle(msg) {
   if (msg.type === 'build') {
     console.log('LayerBoat: building ' + (msg.text ? msg.text.length : 0) + ' characters');
     try { figma.ui.postMessage({ type: 'built', ok: true, text: await receiveFromAE(msg.text) }); }

@@ -29,6 +29,7 @@
   const connText = document.getElementById('connText');
   const sendBtn = document.getElementById('send');
   let connected = false;
+  let pickedUpAt = 0;
 
   async function ping() {
     let state = 'none';
@@ -37,15 +38,22 @@
       const t = await r.text();
       state = t.indexOf('ae-connected') >= 0 ? 'live' : 'relay';
     } catch (e) { state = 'none'; }
+    // After Effects cannot answer while it builds, so a send it just took
+    // counts as connected until it is free again
+    if (state !== 'live' && state !== 'none' && Date.now() - pickedUpAt < 180000) state = 'building';
+    if (state === 'live') pickedUpAt = 0;
     connected = state === 'live';
     dot.className = connected ? 'on' : '';
+    if (state === 'building') dot.className = 'on';
     connText.textContent = state === 'live' ? 'After Effects is connected'
+      : state === 'building' ? 'After Effects is building the layers...'
       : state === 'relay' ? 'Ready for Illustrator. For After Effects, open the LayerBoat panel there.'
       : 'After Effects not found. Open the LayerBoat panel there.';
     sendBtn.disabled = !connected;
   }
   ping();
   setInterval(ping, 3000);
+  parent.postMessage({ pluginMessage: { type: 'hello' } }, '*');
 
   document.getElementById('send').onclick = () => {
     statusEl.className = '';
@@ -82,6 +90,7 @@
       try {
         const t = await (await fetch(URL_AE + 'status')).text();
         if (t.indexOf('taken') >= 0) {
+          pickedUpAt = Date.now();
           statusEl.className = 'ok';
           statusEl.textContent = 'After Effects received ' + count + ' layers and is building them.' + extra;
           return;
@@ -224,6 +233,7 @@
       statusEl.textContent = msg.text;
       return;
     }
+    if (msg.type === 'sel') { statusEl.className = ''; statusEl.textContent = msg.text; return; }
     if (msg.type === 'progress') { statusEl.className = ''; statusEl.textContent = msg.text; return; }
     if (msg.type === 'built') {
       console.log('LayerBoat: ' + msg.text);

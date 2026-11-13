@@ -1,6 +1,6 @@
 // LayerBoat: core builder. Loaded by the panel and by the test runner.
 var LayerBoatCore = (function () {
-  var VERSION = '1.11';
+  var VERSION = '1.12';
   var LOG_FILE = null;
   // an error as text; some After Effects errors cannot be added to a string directly
   function errText(x) {
@@ -17,6 +17,35 @@ var LayerBoatCore = (function () {
     LOG_FILE = path ? new File(path) : null;
     // keep the log small
     try { if (LOG_FILE && LOG_FILE.exists && LOG_FILE.length > 1000000) LOG_FILE.remove(); } catch (e) {}
+  }
+
+
+  // ---------- viewers opened for work ----------
+  // Layer styles and gradient presets only apply in the open comp, so the build
+  // opens precomps on the way. They are closed again at the end, so the
+  // timeline is not left with a row of tabs.
+  var workViewers = [];
+  var CLOSE_CMD = null;
+  function openForWork(comp) {
+    var known = false;
+    for (var i = 0; i < workViewers.length; i++) if (workViewers[i] === comp) known = true;
+    if (!known) workViewers.push(comp);
+    return comp.openInViewer();
+  }
+  function closeWorkViewers(keep) {
+    var list = workViewers; workViewers = [];
+    if (CLOSE_CMD === null) { try { CLOSE_CMD = app.findMenuCommandId('Close') || 0; } catch (e0) { CLOSE_CMD = 0; } }
+    if (!CLOSE_CMD) return;
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      if (!c || c === keep) continue;
+      try {
+        var v = c.openInViewer();
+        if (v) v.setActive();
+        // only ever closes the tab of the comp that was opened for the work
+        if (app.project.activeItem === c && app.activeViewer && app.activeViewer.type === ViewerType.VIEWER_COMPOSITION) app.executeCommand(CLOSE_CMD);
+      } catch (e) { log('could not close a work tab: ' + errText(e)); }
+    }
   }
 
   // ---------- timing ----------
@@ -193,7 +222,7 @@ var LayerBoatCore = (function () {
     for (var i = 1; i <= comp.numLayers; i++) if (comp.layer(i).comment === 'bridge-native-copy') { V = comp.layer(i); break; }
     if (!V) return null;
     V.comment = '';
-    if (app.project.activeItem !== comp) { comp.openInViewer(); }
+    if (app.project.activeItem !== comp) { openForWork(comp); }
     var sel2 = comp.selectedLayers;
     for (var s2 = 0; s2 < sel2.length; s2++) sel2[s2].selected = false;
     V.selected = true;
@@ -408,7 +437,7 @@ var LayerBoatCore = (function () {
         var comp = job.layer.containingComp;
         if (comp !== lastComp) {
           // a preset lands in the comp that is in front, so this one is brought there
-          var viewer = comp.openInViewer();
+          var viewer = openForWork(comp);
           try { if (viewer) viewer.setActive(); } catch (eV) {}
           if (app.project.activeItem !== comp) log('gradient preset: ' + comp.name + ' is not the active comp');
           lastComp = comp;
@@ -1910,7 +1939,7 @@ var LayerBoatCore = (function () {
       var job = styleQueue[i], L = job.layer, e = job.effect;
       try {
         var comp = L.containingComp;
-        if (comp !== lastComp) { comp.openInViewer(); lastComp = comp; }
+        if (comp !== lastComp) { openForWork(comp); lastComp = comp; }
         // nothing else may be selected, or the preset lands there too
         for (var k = 1; k <= comp.numLayers; k++) { try { if (comp.layer(k).selected) comp.layer(k).selected = false; } catch (eD) {} }
         L.selected = true;
@@ -2217,6 +2246,7 @@ var LayerBoatCore = (function () {
       for (var ls = 0; ls < leftSel.length; ls++) leftSel[ls].selected = false;
       // the built comp ends up open and selected, not a gradient comp opened on the way
       try { var selItems = app.project.selection; for (var si = 0; si < selItems.length; si++) selItems[si].selected = false; comp.selected = true; } catch (eSel) {}
+      closeWorkViewers(comp);
       var viewer = comp.openInViewer();
       try { if (viewer) viewer.setActive(); } catch (eV) {}
       // After Effects can still bring a gradient comp forward afterwards, so the built comp is opened once more

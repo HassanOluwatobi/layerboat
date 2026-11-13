@@ -20,6 +20,7 @@
     "ImportOptions": "readonly",
     "BlendingMode": "readonly",
     "TrackMatteType": "readonly",
+    "ViewerType": "readonly",
     "ParagraphJustification": "readonly",
     "AutoKernType": "readonly",
     "PropertyType": "readonly",
