@@ -18,7 +18,9 @@ What it does
 - Send a frame or a selection from Figma to After Effects. Shapes, text, gradients, images, masks and groups come in as native After Effects layers, ready to animate.
 - Send a comp from After Effects back to Figma.
 - Send artwork from Illustrator to Figma, and Figma frames to Illustrator, with text kept live and layer names kept.
-- Send the same frame again and the comp updates in place.
+- Figma components come in as shared After Effects comps. Each copy keeps its own text as an Essential Graphics control.
+- Select several frames to send them all at once. Each one becomes its own comp.
+- Send the same frame again and the comp updates in place. Your keyframes and effects stay.
 
 How to use it
 1. Download LayerBoat from tobihassan.com/layerboat and run Install LayerBoat.jsx in After Effects with File > Scripts > Run Script File.
@@ -27,7 +29,7 @@ How to use it
 
 This plugin needs the free LayerBoat app on your computer. The plugin talks only to that app, on your own computer. Nothing is sent to the internet.
 
-Works with After Effects and Illustrator on macOS and Windows.
+Works with After Effects and Illustrator on macOS and Windows. The same download also sends Photoshop documents to After Effects.
 
 ## Support contact
 https://github.com/HassanOluwatobi/layerboat/issues
