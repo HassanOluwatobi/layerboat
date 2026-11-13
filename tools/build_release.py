@@ -84,6 +84,7 @@ import re as _re
 _ver = _re.search(r"VERSION = '([^']+)'", core).group(1)
 inst = open(os.path.join(rel, 'Install LayerBoat.jsx'), encoding='utf-8').read().replace('@@VERSION@@', _ver)
 open(os.path.join(out, 'Install LayerBoat.jsx'), 'w', encoding='utf-8').write(inst)
+shutil.copy(os.path.join(rel, 'Uninstall LayerBoat.jsx'), os.path.join(out, 'Uninstall LayerBoat.jsx'))
 shutil.copy2(os.path.join(rel, 'README.txt'), os.path.join(out, 'README.txt'))
 import re
 ver = re.search(r"VERSION = '([^']+)'", core).group(1)

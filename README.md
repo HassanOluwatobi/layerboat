@@ -28,6 +28,8 @@ Send the same frame or artboard again and LayerBoat updates the comp it made bef
 
 If After Effects says scripts are not allowed to write files, turn on **Settings > Scripting & Expressions > Allow Scripts to Write Files and Access Network** and run the installer again.
 
+To remove LayerBoat, run `Uninstall LayerBoat.jsx` from the download the same way.
+
 The full guide is in [release/README.txt](release/README.txt). It ships inside the download too.
 
 ## Requirements
