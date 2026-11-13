@@ -143,6 +143,23 @@
   }
   @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .btn, summary::after, .seg button { transition:none; } .fade { animation:none; } }
 </style>
+<style>
+  .cmp { width:100%; border-collapse:separate; border-spacing:0; background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; font-size:15px; }
+  .cmp th, .cmp td { text-align:left; padding:14px 18px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .cmp tr:last-child td { border-bottom:0; }
+  .cmp thead th { font-size:13px; color:var(--faint); font-weight:600; background:#fafafa; }
+  .cmp thead th.us { color:var(--ink); }
+  .cmp td:first-child { color:var(--soft); width:32%; }
+  .cmp td.us { font-weight:600; }
+  .cmp .y { color:#1f9d55; } .cmp .n { color:var(--faint); }
+  .cmp-wrap { overflow-x:auto; }
+  .note { font-size:13px; color:var(--faint); margin-top:12px; }
+  .pick { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:28px; }
+  .pick .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; }
+  .pick h3 { font-size:17px; margin-bottom:10px; }
+  .pick ul { padding-left:18px; color:var(--soft); font-size:15px; display:grid; gap:6px; }
+  @media (max-width:600px) { .cmp th, .cmp td { padding:12px; font-size:14px; } .pick { grid-template-columns:1fr; } }
+</style>
 <script>if(/github\.io$/.test(location.hostname))location.replace("https://tobihassan.com/layerboat"+location.hash);</script>
 <script>if(/(^|\.)tobihassan\.com$/.test(location.hostname)){window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments)};["/_vercel/insights/script.js","/_vercel/speed-insights/script.js"].forEach(function(s){var e=document.createElement("script");e.defer=1;e.src=s;document.head.appendChild(e)})}</script>
 </head>
@@ -288,6 +305,15 @@
     </div>
     <div class="route" id="route" aria-live="polite"></div>
     <p class="route-tip" id="tip"></p>
+  </section>
+
+  <section id="compare">
+    <div class="sec-head">
+      <h2>How it compares to Overlord.</h2>
+      <p>Overlord by Battle Axe is the best-known tool for this job. Here's the short version.</p>
+    </div>
+    <div class="cmp-wrap"><table class="cmp"><thead><tr><th></th><th class="us">LayerBoat</th><th>Overlord</th></tr></thead><tbody><tr><td>Price</td><td class="us">Free</td><td class="">$75 per user, one time</td></tr><tr><td>Updates</td><td class="us">Every update, free</td><td class="">One year included, then optional renewal</td></tr><tr><td>Licence</td><td class="us">Open source (MIT). Install it on any number of machines</td><td class="">Licence key for 2 machines per user</td></tr><tr><td>Account or sign-in</td><td class="us">None</td><td class="">Online unlock step during setup</td></tr><tr><td>Figma ↔ After Effects</td><td class="us"><span class="y">✓</span> Yes</td><td class=""><span class="y">✓</span> Yes</td></tr><tr><td>Figma ↔ Illustrator</td><td class="us"><span class="y">✓</span> Yes</td><td class=""><span class="y">✓</span> Yes</td></tr><tr><td>Photoshop</td><td class="us"><span class="n">✕</span> No</td><td class=""><span class="y">✓</span> Yes, including adjustment layers and layer styles</td></tr><tr><td>Editable text</td><td class="us"><span class="y">✓</span> Yes, with mixed styles in one box</td><td class=""><span class="y">✓</span> Yes, with per-character styling</td></tr><tr><td>Mac and Windows</td><td class="us"><span class="y">✓</span> Yes</td><td class=""><span class="y">✓</span> Yes</td></tr></tbody></table></div>
+    <p class="note"><a href="/layerboat/vs-overlord" style="text-decoration:underline">See the full comparison</a></p>
   </section>
 
   <section id="faq">
