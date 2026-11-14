@@ -161,7 +161,7 @@
   // 6. The one step left in Figma
   var w = new Window('dialog', 'LayerBoat ' + VERSION + ' is installed');
   w.orientation = 'column'; w.alignChildren = ['fill', 'top']; w.spacing = 10; w.margins = 18; w.preferredSize.width = 620;
-  w.add('statictext', undefined, 'The LayerBoat panel is open. From now on it is also in Window > LayerBoat.jsx.', { multiline: true }).preferredSize = [560, 34];
+  w.add('statictext', undefined, wasThere ? 'The LayerBoat panel is open. It is also in Window > LayerBoat.jsx.' : 'The LayerBoat panel is open. Restart After Effects once, and from then on it is in Window > LayerBoat.jsx.', { multiline: true }).preferredSize = [560, 34];
   // a panel that was already docked keeps running the old version until it is reopened
   if (wasThere) w.add('statictext', undefined, 'Updating? If the LayerBoat panel was already open, close it and open it again from Window > LayerBoat.jsx. Until then it runs the old version.', { multiline: true }).preferredSize = [560, 34];
   w.add('statictext', undefined, 'One step left, in Figma: Plugins > Development > Import plugin from manifest..., then choose this file:', { multiline: true }).preferredSize = [560, 34];

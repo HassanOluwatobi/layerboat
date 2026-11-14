@@ -9,9 +9,10 @@ both ways, and sends Photoshop documents to After Effects.
 Install (Mac and Windows)
 1. Unzip this folder and keep its files together.
 2. In After Effects, choose File > Scripts > Run Script File... and pick
-   "Install LayerBoat.jsx". The panel opens straight away. No restart, no
-   Terminal, nothing to install on the side. Use Run Script File. The option
-   called Install ScriptUI Panel is a different one and will not work.
+   "Install LayerBoat.jsx". The panel opens straight away. It shows up in
+   Window > LayerBoat.jsx after you restart After Effects once. Use Run
+   Script File. The option called Install ScriptUI Panel is a different one
+   and will not work.
 3. The installer shows one last step for Figma: Plugins > Development >
    Import plugin from manifest..., then pick the file it shows. Click
    "Copy path" to paste it in. On a Mac press Cmd+Shift+G in the file

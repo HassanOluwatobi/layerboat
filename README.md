@@ -23,7 +23,7 @@ Send the same frame or artboard again and LayerBoat updates the comp it made bef
 ## Install
 
 1. [Download LayerBoat](https://tobihassan.com/layerboat) and unzip it.
-2. In After Effects, choose **File > Scripts > Run Script File** and pick `Install LayerBoat.jsx`. Use Run Script File. The option called Install ScriptUI Panel is a different one and won't work. The LayerBoat panel opens straight away. Later you find it at **Window > LayerBoat.jsx**.
+2. In After Effects, choose **File > Scripts > Run Script File** and pick `Install LayerBoat.jsx`. Use Run Script File. The option called Install ScriptUI Panel is a different one and won't work. The LayerBoat panel opens straight away. After you restart After Effects once, you also find it at **Window > LayerBoat.jsx**.
 3. In Figma, install the LayerBoat plugin. Until it is in the Figma Community, use **Plugins > Development > Import plugin from manifest** and pick the file the installer shows you.
 4. In Illustrator, choose **File > Scripts > Other Script** and pick `LayerBoat Panel.jsx` in the folder the installer made.
 5. In Photoshop, restart it once. Then choose **File > Scripts > LayerBoat - Send to After Effects**.
